@@ -10,6 +10,7 @@ export { InternalBusBridge, connectFeedbackParticipant } from '../channel/intern
 export { CanopyChatBot } from '../channel/canopy-chat-bot.js';
 export { InMemoryCentralPod } from '../pod/central-pod.js';
 export { buildContribution } from '../pod/contribution.js';
+export { generateParticipantIdentity, IdentityRoster, makeContributionVerifier } from '../pod/signing.js';
 export { validateProjectConfig, exampleProjectConfig } from '../config/project-config.js';
 export { applyLlmRoute, assertCleanRouteSafe } from '../ollama.js';
 export { makeCssCentralPod } from '../pod/css-auth.js';
