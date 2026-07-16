@@ -1,122 +1,108 @@
 # onderling-feedback
 
-A privacy-respecting **feedback pipeline** — local-LLM clean / anonymize / dedup-summarize with a
-user-driven verify-summary loop, running on the user's own Solid pod. Part of the **Onderling** product
-line (OR / zorg / whistleblower "feedback-infrastructuur").
+Privacy-first community feedback. Participants speak freely — to a chat bot in the
+[Basis](https://github.com/Onderling/basis) app or over Telegram — and what reaches the
+organization is cleaned, anonymized, pseudonymous, and verifiable. The people being asked for
+honesty keep control over exactly what leaves their device; the people asking get aggregated,
+segmentable insight they can trust.
 
-Formerly `apps/feedback-pipeline` in the `canopy-mono` monorepo; **split out into its own repo** — the first
-"third-party via SDK" tenant of the Onderling platform.
+Built on the [Onderling platform](https://github.com/Onderling/basis) as its **first external
+tenant**: this repo consumes the published `@onderling/*` packages like any third party would.
 
-## Standalone repo
-
-- **Consumes the Onderling platform via `@onderling/*` packages.** *Interim:* local `file:` deps pointing at a
-  sibling `canopy-mono` checkout (`../canopy-mono/packages/*`). These swap to published `@onderling/…@^x` once
-  the SDK is published — a `package.json`-only change, no source edits (imports are already bare `@onderling/*`).
-- **Deps:** `@onderling/core`, `@onderling/pod-client`, `@onderling/pseudo-pod`, `@onderling/redaction` (+ non-canopy:
-  `@inrupt/solid-client-authn-core`, `@modelcontextprotocol/sdk`, `eld`, `zod`).
-- **Install + test:** `npm install` → `npm test` (node:test — 288 passing).
-- **Provenance:** carved from `canopy-mono` via `git filter-repo`. The split plan lives in the monorepo's
-  `plans/PLAN-feedback-split.md`; **finishing the split (push + finalize) → [`FINISH-SPLIT.md`](./FINISH-SPLIT.md).**
-
----
-
-## The pipeline
+## How it protects participants
 
 ```
-raw message
+raw message  (participant's device / bot channel)
    │
-   ▼  step 1  — src/redact.js  (deterministic regex)
-strip phone · email · IBAN · postcode · URL · street+number  → [token]s
+   ▼  deterministic floor — regex + validators (@onderling/redaction)
+strip phone · email · IBAN · BSN · postcode · URL · street+number  → [token]s
    │
-   ▼  step 1b — src/names.js   (gazetteer)
-strip KNOWN first names → [naam]   (best-effort; see FINDINGS)
+   ▼  gazetteer — known first names → [naam]  (best-effort, by design not a guarantee)
    │
-   ▼  step 1c — src/lang.js    (detect NL/EN, hybrid: user default + override)
+   ▼  language detect (NL/EN) → monolingual CLEAN prompt on a CONFIDENTIAL LLM
+drop remaining names · remove insults aimed at people · keep severity and meaning
    │
-   ▼  step 2  — src/prompts.js CLEAN_SYSTEM[lang]  (local LLM, qwen2.5:7b)
-drop remaining names · remove swear words/insults BUT keep severity & intensity
-(monolingual prompt — no translation surface)
+   ▼  participant REVIEWS the cleaned text — consent is the hand-over
    │
-   ▼  step 3  — src/triage.js  triageSummarize()
-   ├─ crisis lexicon (src/signals.js, deterministic) + LLM label per message
-   ├─ SIGNAL track → crisis / safety / serious-integrity → escalation (not aggregated)
-   └─ REGULAR → grouped by domain → summarize PER DOMAIN (dedup within)
+   ▼  signed, pseudonymous contribution → central pod    (raw text never leaves the
+      participant's own record; optional coarse background attributes ride along
+      under the requested-attributes charter, k-anonymity-guarded at read)
+   │
+   ▼  aggregation → per-domain summaries → participant-verifiable summary loop
 ```
 
-**Why the split?** Local models de-curse and drop names well but **leak
-structured identifiers** (phone/email/IBAN) inconsistently — so those go to a
-100%-reliable regex. **Names** are an open set, so a gazetteer catches the
-common cases and the LLM mops up the rest (it is *not* a guarantee — see
-FINDINGS). And rather than tell one prompt to "keep the language" (which a 7B
-model drifts on), we **detect the language and route to a monolingual prompt**.
-Evidence + per-model verdicts + the iteration log:
-[`docs/FINDINGS.md`](./docs/FINDINGS.md). The regex layer is also the product's
-*architectural* anonymity guarantee ("drempel ingebouwd").
+The ordering is the guarantee: structured identifiers are removed by **deterministic code**
+(regex + checksum validators — the LLM never gets a chance to leak them), the LLM handles only
+the fuzzy remainder, and the **participant sees and approves** what is shared before anything is
+shared. Crisis signals are triaged out for escalation instead of being averaged into summaries.
+Evidence, model comparisons, and adversarial stress-tests: [`docs/FINDINGS.md`](docs/FINDINGS.md),
+[`docs/STRESS-TEST-RESULTS.md`](docs/STRESS-TEST-RESULTS.md).
 
 ## What's in here
 
-```
-apps/feedback-pipeline/
-├── src/
-│   ├── redact.js      ← step 1: regex pre-pass (pure, tested)
-│   ├── names.js       ← step 1b: name gazetteer (best-effort, tested)
-│   ├── lang.js        ← step 1c: NL/EN detect + hybrid resolver (tested)
-│   ├── signals.js     ← crisis lexicon (deterministic, high-recall; tested)
-│   ├── prompts.js     ← CLEAN_SYSTEM.{en,nl} + SUMMARIZE_SYSTEM + LABEL_SYSTEM
-│   ├── ollama.js      ← tiny Ollama HTTP client (temp 0)
-│   ├── pipeline.js    ← cleanMessage() / summarize() / runPipeline()
-│   └── triage.js      ← step 3: triageSummarize() — signal track + per-domain
-├── fixtures/messages.js   ← EN+NL fixtures (PII + profanity + dup batch)
-├── scripts/
-│   ├── clean-smoke.js     ← step 1+2 across models     → results-clean.md
-│   └── pipeline-smoke.js  ← full step 1→2→3            → results-pipeline.md
-├── test/
-│   ├── redact.test.js     ← regex unit tests + documented false positives
-│   ├── names.test.js      ← name FP/FN limits (adversarial)
-│   └── lang.test.js       ← detection + hybrid resolver, incl. LIMIT cases
-└── docs/
-    ├── FINDINGS.md             ← model comparison + iteration log
-    ├── SIMULATIONS.md          ← full-pipeline runs (Richting 5 participation)
-    ├── STRESS-TEST-AGENTS.md   ← multi-agent adversarial stress-test spec
-    ├── STRESS-TEST-RESULTS.md  ← stress-test verdicts (4 audits) + fixes
-    ├── STRESS-TEST-TRACE-richting3.md ← sentence-level input→output trace
-    ├── CATEGORIES-AND-LAYERS.md ← forward design: all category/PII floors × scenarios
-    ├── TODO-category-floors.md ← next build: deterministic floor per category
-    ├── BEST-PRACTICES.md       ← shielding / minimal-edit / specialized passes
-    ├── pipeline-order.md       ← step order: floors + LLM (deterministic+llm gates)
-    ├── parameters.md           ← every config field + env knob (onboarding checklist)
-    ├── privatemode-models.md   ← Privatemode API model ids + prompt-profile assignment
-    └── PLAN-tomorrow-tg-pod.md ← Telegram + pod wiring plan
-fixtures/scenario-tests.js      ← per-scenario multi-agent test configs (A/B/C + 1–5)
-workflows/gen-scenario.js       ← reusable generation workflow (args = a scenario config)
-```
+| Area | What it does |
+|---|---|
+| `src/redact.js` · `src/names.js` · `src/floors/` | the deterministic anonymization floor |
+| `src/pipeline.js` · `src/triage.js` · `src/prompt-profiles.js` | clean → label → per-domain summarize, per-model prompt profiles |
+| `src/channel/` | the participant channels: Basis chat-bot, Telegram bot (HMAC pseudonyms), dispatcher, review/consent flow |
+| `src/pod/` | contributions on Solid pods: participant's own pod, central pod, signing + verification, BYO-pod |
+| `src/verify/` | the verify-summary loop — participants confirm the summary reflects their input |
+| `src/aggregation/` · `src/curator/` | rounds, aggregation, the curator/PM portal (`scripts/portal.js`) |
+| `src/mcp/` | an MCP server exposing the pipeline as a standard tool ([`docs/README-mcp.md`](docs/README-mcp.md)) |
+| `src/tee/` | confidential-LLM transport ([`docs/CONFIDENTIAL-LLM-TRANSPORT.md`](docs/CONFIDENTIAL-LLM-TRANSPORT.md)) |
+| `eval/` · `fixtures/` · `workflows/` | scenario generators + multi-agent adversarial evaluation |
+| `deploy/` | docker-compose + Caddy for the service side |
 
 ## Bring it up
 
 ```bash
-cd apps/feedback-pipeline
+npm install
+npm test                    # node:test — the full suite, no LLM required
 
-# 1. deterministic part — no Ollama needed:
-npm test
+# with a local model (Ollama):
+npm run clean-smoke         # anonymization pass across candidate models
+npm run full-pipeline       # end-to-end: clean → consent → pod → aggregate → summary
 
-# 2. model experiments — needs Ollama running with the models pulled:
-npm run clean-smoke       # → results-clean.md
-npm run pipeline-smoke    # → results-pipeline.md
+# the standard confidential route is Privatemode (docs/privatemode-models.md);
+# LLM routes are configured in src/config/project-config.js
+npm run llm-health          # is a model actually answering?
+
+# channels + operations:
+npm run canopy-bot          # the live bot (Basis circles + Telegram)
+npm run portal              # the project-lead portal
+npm run mcp                 # the MCP tool server
 ```
 
-Model sets are env-overridable so you can keep testing candidates before
-committing to one:
+Configuration knobs are catalogued in [`docs/parameters.md`](docs/parameters.md). **Never commit
+`.env` files or run artifacts** (`results-*.md`, `portal-store.json`) — they are gitignored for a
+reason.
 
-```bash
-CLEAN_MODELS="qwen2.5:7b-instruct,mistral:7b-instruct,qwen2.5:3b-instruct" npm run clean-smoke
-CLEAN_MODEL=qwen2.5:7b-instruct SUMMARIZE_MODELS="qwen2.5:7b-instruct,mistral:7b-instruct" npm run pipeline-smoke
-OLLAMA_URL=http://otherbox:11434 npm run clean-smoke   # point at a remote Ollama
-```
+## Relation to the platform
 
-## Status (2026-06-02)
+Depends on `@onderling/{core, pod-client, pseudo-pod, redaction, attribute-charter}` —
+[published on npm](https://github.com/Onderling/basis/blob/master/docs/packages.md). *Interim:*
+this checkout still uses local `file:../canopy-mono/*` links; they swap to registry versions as
+the post-split tail completes ([`docs/POST-SPLIT.md`](docs/POST-SPLIT.md)). The Basis app hosts
+the feedback bot through this repo's public surface (`src/public/`, importable as
+`onderling-feedback/public` + `/testing`).
 
-Scaffold + baseline findings only. Step 1 (regex) is implemented and unit-tested;
-steps 2–3 are prompt + harness, validated by hand against today's sweep but **not
-yet run inside this app** (the model sweeps are the user's to trigger). No
-Telegram, no pod, no `@onderling/*` wiring yet — see the tomorrow-plan. All fixtures
-are synthetic.
+## Status (2026-07)
+
+Working and **proven live end-to-end**: a real Telegram bot → confidential LLM (Privatemode)
+→ real Solid central pod, with HMAC pseudonyms, review-and-consent, own-pod raw retention
+(participant-controlled), the requested-attributes charter (coarse, capped, k-anonymity-guarded),
+and the verify-summary loop — 304 tests green. The remaining work is finishing polish (prompt-
+candidate adoption, logging slice, onboarding surfaces) and operational hardening; the app is a
+research preview, not yet a hosted service.
+
+## Security
+
+Vulnerability reports: **security@onderling.org** (coordinated disclosure — please no public
+issues for vulnerabilities). The threat model and storage/encryption choices are documented in
+[`docs/SECURITY-MODEL.md`](docs/SECURITY-MODEL.md) and
+[`docs/POD-ENCRYPTION-MODEL.md`](docs/POD-ENCRYPTION-MODEL.md).
+
+## Name history
+
+Developed as `apps/feedback-pipeline` inside the former `canopy-mono` monorepo; carved into this
+repository (July 2026) with full history. License: Apache-2.0.
