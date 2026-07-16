@@ -5,3 +5,7 @@ portal-store.json
 
 # interim: file:-dep lock is machine-local; regenerate + commit at the publish swap
 package-lock.json
+
+# secrets — never commit
+.env
+.env.*

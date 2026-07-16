@@ -5,7 +5,8 @@
   "type": "module",
   "private": true,
   "exports": {
-    "./public": "./src/public/index.js"
+    "./public": "./src/public/index.js",
+    "./testing": "./test/helpers/mock-llm.js"
   },
   "scripts": {
     "test": "node --test",
