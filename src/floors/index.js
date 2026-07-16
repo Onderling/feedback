@@ -1,7 +1,7 @@
 // The DETERMINISTIC FLOORS as one standalone, browser-runnable module.
 //
 // These are the LLM-free guarantees that must run CLIENT-SIDE, before any text
-// reaches the LLM route — on the participant's device for canopy-chat (so even
+// reaches the LLM route — on the participant's device for basis (so even
 // the TEE sees only floored, shielded text), and in the bot service for the TG
 // route. See feedback-pipeline-build-proposal-en.md §3.
 //

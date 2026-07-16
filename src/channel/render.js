@@ -1,5 +1,5 @@
 // Shared reply renderer — turns a dispatcher message ({type, ...}) into {text, buttons}
-// for any bridge's sendReply (Telegram and canopy-chat both render identically). All prose
+// for any bridge's sendReply (Telegram and basis both render identically). All prose
 // comes from the `s` string table (src/strings); nothing is hardcoded here.
 
 import { getStrings } from '../strings/index.js';

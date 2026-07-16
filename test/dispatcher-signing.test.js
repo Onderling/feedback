@@ -1,5 +1,5 @@
 // PR-3 — signing threaded through the dispatcher. On a participant-controlled channel
-// (canopy-chat on-device) consent() signs each contribution with the participant's key, so a
+// (basis on-device) consent() signs each contribution with the participant's key, so a
 // verify-enabled project accepts it. The host-run TG delegate has no participant key → it
 // writes unsigned, which a verify-enabled project refuses (TG = the lightweight option). A
 // seal-only project still works without an identity (backward compatible).
@@ -25,7 +25,7 @@ async function withMockLlm(t) {
   t.after(async () => { if (prev === undefined) delete process.env.FP_LLM_BASEURL; else process.env.FP_LLM_BASEURL = prev; await mock.close(); });
 }
 
-test('canopy-chat (with identity): consent signs; a verify-enabled pod accepts', async (t) => {
+test('basis (with identity): consent signs; a verify-enabled pod accepts', async (t) => {
   await withMockLlm(t);
   const id = generateParticipantIdentity();
   const roster = new IdentityRoster();

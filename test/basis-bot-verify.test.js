@@ -1,7 +1,7 @@
-// Verify-summary loop through the CanopyChatBot mount — poll → bubble → tap [verify] → central.
+// Verify-summary loop through the BasisBot mount — poll → bubble → tap [verify] → central.
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { CanopyChatBot } from '../src/channel/canopy-chat-bot.js';
+import { BasisBot } from '../src/channel/basis-bot.js';
 import { InMemoryCentralPod } from '../src/pod/central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
 import * as signing from '../src/pod/signing.js';
@@ -25,7 +25,7 @@ const mockSummarise = async ({ round }) => ({
   curatedFrom: ['alice:p1'], generatedAt: 'now',
 });
 
-test('canopy-chat mount: poll opens the verify bubble; tap [verify] → central; raw stays own', async () => {
+test('basis mount: poll opens the verify bubble; tap [verify] → central; raw stays own', async () => {
   const id = signing.generateParticipantIdentity();
   const roster = new signing.IdentityRoster();
   roster.bind('alice', id.publicKey, id.encPublicKey);
@@ -39,7 +39,7 @@ test('canopy-chat mount: poll opens the verify bubble; tap [verify] → central;
     signal: { layer1OnDevice: true, escalationCategories: ['crisis'] },
   });
   const bridge = mockBridge();
-  const bot = new CanopyChatBot({ bridge, pod: ownPod, centralPod: central, controlStore: control, config, participantFor: () => 'alice', identityFor: () => id });
+  const bot = new BasisBot({ bridge, pod: ownPod, centralPod: central, controlStore: control, config, participantFor: () => 'alice', identityFor: () => id });
   await bot.start();
 
   // Stage 1 — alice's RAW → her OWN pod.
@@ -61,7 +61,7 @@ test('canopy-chat mount: poll opens the verify bubble; tap [verify] → central;
   assert.equal(ownPod.list().length, 2, 'raw stayed in the own pod');
 });
 
-test('canopy-chat mount: nudge fires a local notification for a pending round (self-poll/self-notify)', async () => {
+test('basis mount: nudge fires a local notification for a pending round (self-poll/self-notify)', async () => {
   const id = signing.generateParticipantIdentity();
   const roster = new signing.IdentityRoster();
   roster.bind('alice', id.publicKey, id.encPublicKey);
@@ -73,7 +73,7 @@ test('canopy-chat mount: nudge fires a local notification for a pending round (s
     aggregation: { k: 1 }, privacy: { verify: true },
     signal: { layer1OnDevice: true, escalationCategories: ['crisis'] },
   });
-  const bot = new CanopyChatBot({ bridge: mockBridge(), pod: new InMemoryCentralPod({ verify }), centralPod: central, controlStore: control, config, participantFor: () => 'alice', identityFor: () => id });
+  const bot = new BasisBot({ bridge: mockBridge(), pod: new InMemoryCentralPod({ verify }), centralPod: central, controlStore: control, config, participantFor: () => 'alice', identityFor: () => id });
   await bot.start();
   await openVerificationRound({ controlStore: control, projectId: 'demo', round: 1, message: 'verify pls' });
 
@@ -84,10 +84,10 @@ test('canopy-chat mount: nudge fires a local notification for a pending round (s
   assert.equal(fired[0].message, 'verify pls');
 });
 
-test('canopy-chat mount: without centralPod/controlStore the poll is a no-op (legacy single-pod)', async () => {
+test('basis mount: without centralPod/controlStore the poll is a no-op (legacy single-pod)', async () => {
   const bridge = mockBridge();
   const config = validateProjectConfig({ projectId: 'demo', llm: { route: 'local', model: 'mock' }, aggregation: { k: 1 } });
-  const bot = new CanopyChatBot({ bridge, pod: new InMemoryCentralPod(), config });
+  const bot = new BasisBot({ bridge, pod: new InMemoryCentralPod(), config });
   await bot.start();
   assert.equal(await bot.pollVerification('chat-1'), null);
 });

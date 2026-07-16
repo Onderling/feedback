@@ -36,7 +36,7 @@ export default {
   verificationWithdrawn: 'Nothing shared — your feedback stays with you.',
   verifyNone: 'There is no summary ready to verify.',
   // this project requires a verified identity, which this channel cannot provide
-  verificationRequired: 'This project only accepts contributions from a verified identity. Please take part through the canopy app, which signs your contribution on your own device.',
+  verificationRequired: 'This project only accepts contributions from a verified identity. Please take part through the Basis app, which signs your contribution on your own device.',
   consentFailed: (n) => `${n} contribution(s) could not be stored and were not sent. Nothing was kept.`,
 
   contributionsHeader: 'Your contributions:',

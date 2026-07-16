@@ -8,8 +8,8 @@
 // wiring its onPeerMessage to ours), so this module imports no @onderling/* and the transport
 // (NKN, etc.) is never named here — `transportMode` lives with the secure-agent, not the bridge.
 //
-// Wire shape (a thin subtype on the peer payload, routed like canopy-chat's peerRouter).
-// The bot accepts its NATIVE shape AND canopy-chat's GENERIC contact-thread channel
+// Wire shape (a thin subtype on the peer payload, routed like basis's peerRouter).
+// The bot accepts its NATIVE shape AND basis's GENERIC contact-thread channel
 // (the platform ships the generic channel; this bot — the dogfood — adapts to it,
 // rather than the platform learning `fp-*`). It replies in whichever subtype it was
 // addressed in, echoing the channel's `threadId` so the client routes the reply back:
@@ -48,7 +48,7 @@ export class PeerBridge {
   }
 
   /** The host wires sa.peer's onPeerMessage to THIS (or routes the `fp-msg`/`contact-msg`
-   *  subtypes here, like canopy-chat's peerRouter). Bound so it can be handed straight to
+   *  subtypes here, like basis's peerRouter). Bound so it can be handed straight to
    *  `connect({onPeerMessage})`. */
   onPeerMessage = async (env) => {
     const { from, payload } = env ?? {};

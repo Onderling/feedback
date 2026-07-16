@@ -6,7 +6,7 @@
 // participant SIGNATURE bound to a verified membership: one redeemed code → one identity →
 // its contributions, and nothing else counts.
 //
-// Wire-compatible with the canopy substrate (packages/core AgentIdentity): Ed25519, public
+// Wire-compatible with the Onderling platform (@onderling/core AgentIdentity): Ed25519, public
 // keys as b64url of the raw 32-byte key, seed-based private keys. So a real participant agent
 // (tweetnacl Ed25519) and this verifier interoperate — but built on node:crypto only, so the
 // app stays dependency-free and testable standalone (the substrate is injected, never imported).
@@ -65,7 +65,7 @@ export function signContribution({ projectId, participant, contribution }, priva
  * Build the `{sig, pubKey}` write-meta for a contribution from a participant identity (M1.3).
  * The identity may be EITHER a feedback-pipeline keypair (`{publicKey, privateKey:"<pub>.<seed>"}`)
  * OR any signer exposing `sign(bytes)->Uint8Array` + a pubKey (e.g. @onderling/core `AgentIdentity`
- * held in the canopy-chat vault) — so the dispatcher can sign with the participant's real key
+ * held in the basis vault) — so the dispatcher can sign with the participant's real key
  * without knowing its storage format. Returns `{}` when identity is absent (unsigned).
  */
 export function contributionMeta(identity, { projectId, participant, contribution }) {

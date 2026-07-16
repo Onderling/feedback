@@ -1,9 +1,9 @@
 // The Channel Adapter interface — "build once, two adapters" (architecture §1.3).
-// canopy-chat and the TG bot are two SURFACES over the same channel-agnostic flow
+// basis and the TG bot are two SURFACES over the same channel-agnostic flow
 // (src/channel/dispatcher.js). An adapter abstracts the only two things that differ:
 //
 //   1. WHERE the floor runs (the trust difference). `floor()` runs floorMessage where
-//      this channel processes a message: on the participant's DEVICE for canopy-chat
+//      this channel processes a message: on the participant's DEVICE for basis
 //      (pre-send — nothing raw leaves) or in the BOT SERVICE for TG (post-receipt —
 //      Telegram + our bot have already seen the raw text). `floorsTrust` is the honest
 //      label for that.
@@ -19,7 +19,7 @@ export const MENU_ACTIONS = ['my-contributions', 'withdraw', 'download', 'claim'
 
 /**
  * @typedef {object} ChannelAdapter
- * @property {'pre-send'|'post-receipt'} floorsTrust       honesty label: canopy-chat | tg
+ * @property {'pre-send'|'post-receipt'} floorsTrust       honesty label: basis | tg
  * @property {(raw:string, opts?:object) => object|Promise<object>} floor   run the floor pass where this channel runs it
  * @property {(msg:object) => Promise<void>} send          deliver a message to the participant
  */
@@ -34,7 +34,7 @@ export function assertAdapter(a) {
 }
 
 /** A reference in-memory adapter: floor runs server-side (post-receipt, like TG) and
- *  outbound messages are recorded for inspection. A canopy-chat adapter would supply a
+ *  outbound messages are recorded for inspection. A basis adapter would supply a
  *  device-side `floor()` (pre-send) instead — the contract is identical. */
 export class MemoryChannelAdapter {
   floorsTrust = 'post-receipt';

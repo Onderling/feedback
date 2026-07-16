@@ -1,10 +1,10 @@
 // The channel-agnostic dispatcher — the participant journey written ONCE, used by
 // every channel through a ChannelAdapter (architecture §1.3 "build once, two
 // adapters"; the journey is the user-stories doc). It uses the adapter only for I/O
-// and floor placement; all logic here is identical across canopy-chat and TG.
+// and floor placement; all logic here is identical across basis and TG.
 //
 // The dispatcher runs WHERE the channel processes a message — on the device for
-// canopy-chat, in the bot service for TG — so the floor + clean it performs share the
+// basis, in the bot service for TG — so the floor + clean it performs share the
 // adapter's trust context.
 
 import { assertAdapter } from './adapter.js';
@@ -35,7 +35,7 @@ export class ChannelDispatcher {
    * @param {{ adapter, pod, config, participant:string, identity?:{publicKey:string,privateKey:string} }} args
    *   adapter — a ChannelAdapter; pod — the central pod (Phase 2); participant — pseudonym.
    *   identity — the participant's OWN signing keypair, present only where the participant
-   *     controls the agent (canopy-chat on-device). When set, contributions are SIGNED so a
+   *     controls the agent (basis on-device). When set, contributions are SIGNED so a
    *     verify-enabled project accepts them. The host-run TG delegate has no participant key,
    *     so it writes unsigned — which a verify-enabled project will reject (TG is the
    *     lightweight, less-private option, by design).

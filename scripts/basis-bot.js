@@ -1,9 +1,9 @@
 #!/usr/bin/env node
-// canopy-bot — the feedback bot as a co-hosted canopy contact (M1, local mode). Two things:
+// basis-bot — the feedback bot as a co-hosted canopy contact (M1, local mode). Two things:
 //
 //  1. startLocalCanopyBot({ bus, pod, config, identityFor }) — the REUSABLE wiring the
-//     canopy-chat web mount calls: an InternalBusBridge on the participant's shared bus + a
-//     CanopyChatBot, signing consent with the participant's own key (identityFor). No network.
+//     basis web mount calls: an InternalBusBridge on the participant's shared bus + a
+//     BasisBot, signing consent with the participant's own key (identityFor). No network.
 //
 //  2. A runnable demo (when invoked directly): spins up its own InternalBus + a verify pod +
 //     a scripted participant journey, with a SIGINT drain. Gated on an LLM route (review/intent
@@ -16,13 +16,13 @@
 
 import { InternalBusBridge, connectFeedbackParticipant } from '../src/channel/internal-bus-bridge.js';
 import { PeerBridge } from '../src/channel/peer-bridge.js';
-import { CanopyChatBot } from '../src/channel/canopy-chat-bot.js';
+import { BasisBot } from '../src/channel/basis-bot.js';
 import { applyLlmRoute, assertCleanRouteSafe } from '../src/ollama.js';
 
 /**
  * Wire + start a local (in-process) feedback bot on a shared InternalBus.
  * @param {{ bus, pod, config, identityFor?:Function, participantFor?:Function, botAddress?:string }} a
- * @returns {Promise<{ bridge:InternalBusBridge, bot:CanopyChatBot, stop:()=>Promise<void> }>}
+ * @returns {Promise<{ bridge:InternalBusBridge, bot:BasisBot, stop:()=>Promise<void> }>}
  */
 export async function startLocalCanopyBot({ bus, pod, config, identityFor, participantFor, botAddress = 'fp-bot' }) {
   if (!bus) throw new Error('startLocalCanopyBot: a shared InternalBus is required');
@@ -31,7 +31,7 @@ export async function startLocalCanopyBot({ bus, pod, config, identityFor, parti
   applyLlmRoute(config.llm || {});
   assertCleanRouteSafe(config.llm || {});
   const bridge = new InternalBusBridge({ bus, address: botAddress });
-  const bot = new CanopyChatBot({ bridge, pod, config, identityFor, participantFor });
+  const bot = new BasisBot({ bridge, pod, config, identityFor, participantFor });
   await bot.start();
   return { bridge, bot, stop: () => bot.stop() };
 }
@@ -42,14 +42,14 @@ export async function startLocalCanopyBot({ bus, pod, config, identityFor, parti
  * verify-enabled project refuses them gracefully (and a project-provisioned pod is used). The
  * host routes inbound peer messages to `bridge.onPeerMessage` (or `peer.connect({onPeerMessage})`).
  * @param {{ peer, pod, config, participantFor?:Function }} a  peer = sa.peer (sendTo)
- * @returns {Promise<{ bridge:PeerBridge, bot:CanopyChatBot, stop:()=>Promise<void> }>}
+ * @returns {Promise<{ bridge:PeerBridge, bot:BasisBot, stop:()=>Promise<void> }>}
  */
 export async function startExternalCanopyBot({ peer, pod, config, participantFor }) {
   if (!peer || typeof peer.sendTo !== 'function') throw new Error('startExternalCanopyBot: a peer with sendTo() is required');
   applyLlmRoute(config.llm || {});
   assertCleanRouteSafe(config.llm || {});
   const bridge = new PeerBridge({ peer });
-  const bot = new CanopyChatBot({ bridge, pod, config, participantFor });   // no identityFor → unsigned
+  const bot = new BasisBot({ bridge, pod, config, participantFor });   // no identityFor → unsigned
   await bot.start();
   return { bridge, bot, stop: () => bot.stop() };
 }
@@ -68,9 +68,9 @@ if (isMain) {
   const id = signing.generateParticipantIdentity();
   const roster = new signing.IdentityRoster();
   roster.bind('demo-participant', id.publicKey, id.encPublicKey);
-  const pod = new InMemoryCentralPod({ verify: signing.makeContributionVerifier({ roster, projectId: 'canopy-bot-demo' }) });
+  const pod = new InMemoryCentralPod({ verify: signing.makeContributionVerifier({ roster, projectId: 'basis-bot-demo' }) });
   const config = validateProjectConfig({
-    projectId: 'canopy-bot-demo',
+    projectId: 'basis-bot-demo',
     llm: { route: process.env.FP_LLM_ROUTE || 'local', model: process.env.FP_LLM_MODEL || 'mock' },
     aggregation: { k: 1 }, privacy: { verify: true },
     signal: { layer1OnDevice: true, escalationCategories: ['crisis'] },

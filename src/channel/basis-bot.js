@@ -1,34 +1,34 @@
-// CanopyChatBot — the canopy-chat multiplexer. Same structure as TelegramFeedbackBot, but
+// BasisBot — the basis multiplexer. Same structure as TelegramFeedbackBot, but
 // the front-end is NATURAL LANGUAGE: participants type freely ("I think the waiting lists
 // are too long", "ok I'm done", "yes send them all") and an intent classifier maps the
 // non-command turns to actions. Explicit button callbacks (fp:*) still work, so the chat UI
 // can offer buttons too. Everything past routing is the shared dispatcher + actions.
 //
 // Decoupled from the substrate via the minimal onMessage/sendReply bridge contract — the
-// @onderling/chat-agent InMemoryBridge satisfies it (wired live in scripts/canopy-chat-smoke.js).
+// @onderling/chat-agent InMemoryBridge satisfies it (wired live in scripts/basis-smoke.js).
 
 import { ChannelDispatcher } from './dispatcher.js';
-import { CanopyChatChannelAdapter } from './canopy-chat-adapter.js';
+import { BasisChannelAdapter } from './basis-adapter.js';
 import { getStrings } from '../strings/index.js';
 import { parseControl, runAction } from './actions.js';
 import { classifyIntent } from './intent.js';
 import { pollAndOpenVerification } from '../verify/round-control.js';
 import { nudgeForVerification } from '../verify/nudge.js';
 
-export class CanopyChatBot {
+export class BasisBot {
   #bridge; #pod; #centralPod; #controlStore; #config; #model; #participantFor; #identityFor; #strings; #sessions = new Map();
 
   /** @param {{ bridge, pod, config, participantFor?:(chatId:string)=>string,
    *           identityFor?:(chatId:string)=>{publicKey:string,privateKey:string},
    *           centralPod?, controlStore? }} a
-   *  canopy-chat runs ON the participant's device, so `identityFor` can return the participant's
+   *  basis runs ON the participant's device, so `identityFor` can return the participant's
    *  own signing keypair (from their vault) — contributions are then signed and accepted by a
    *  verify-enabled project. When `centralPod` + `controlStore` are supplied, the verify-summary
    *  loop is active: `pod` is the participant's OWN pod (Stage-1 contributions + the summary source),
    *  the verified summary goes to `centralPod`, and `pollVerification` opens any lead-triggered round. */
   constructor({ bridge, pod, config, participantFor, identityFor, centralPod, controlStore }) {
     if (!bridge || typeof bridge.onMessage !== 'function' || typeof bridge.sendReply !== 'function') {
-      throw new Error('CanopyChatBot: bridge with onMessage()/sendReply() required');
+      throw new Error('BasisBot: bridge with onMessage()/sendReply() required');
     }
     this.#bridge = bridge;
     this.#pod = pod;
@@ -44,7 +44,7 @@ export class CanopyChatBot {
   #session(chatId) {
     let s = this.#sessions.get(chatId);
     if (!s) {
-      const adapter = new CanopyChatChannelAdapter({ bridge: this.#bridge, chatId, strings: this.#strings });
+      const adapter = new BasisChannelAdapter({ bridge: this.#bridge, chatId, strings: this.#strings });
       const dispatcher = new ChannelDispatcher({
         adapter, pod: this.#pod, config: this.#config,
         participant: this.#participantFor(chatId), identity: this.#identityFor?.(chatId),

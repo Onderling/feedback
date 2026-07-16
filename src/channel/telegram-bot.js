@@ -1,7 +1,7 @@
 // TelegramFeedbackBot — the multiplexer that turns one Telegram bot into the participant
 // journey for many chats. Each chat gets its own ChannelDispatcher (over a
 // TelegramChannelAdapter bound to that chatId); inbound text and button callbacks are
-// routed to dispatcher actions. The dispatcher + floors are shared with canopy-chat — this
+// routed to dispatcher actions. The dispatcher + floors are shared with basis — this
 // file only does Telegram-specific routing (architecture §1.3 "build once, two adapters").
 //
 // Decoupled from the substrate via the minimal bridge interface (onMessage / sendReply /

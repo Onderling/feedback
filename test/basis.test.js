@@ -1,4 +1,4 @@
-// canopy-chat channel — the natural-language (pre-send) surface. Proves free-text input
+// basis channel — the natural-language (pre-send) surface. Proves free-text input
 // drives the same dispatcher journey as Telegram, via the intent classifier (deterministic
 // fast-path + the mock LLM for the ambiguous rest). Fake bridge = the same minimal
 // onMessage/sendReply contract the @onderling/chat-agent InMemoryBridge implements.
@@ -8,8 +8,8 @@ import assert from 'node:assert/strict';
 import { startMockLlm } from './helpers/mock-llm.js';
 import { InMemoryCentralPod } from '../src/pod/central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
-import { CanopyChatBot } from '../src/channel/canopy-chat-bot.js';
-import { CanopyChatChannelAdapter } from '../src/channel/canopy-chat-adapter.js';
+import { BasisBot } from '../src/channel/basis-bot.js';
+import { BasisChannelAdapter } from '../src/channel/basis-adapter.js';
 import { classifyIntent } from '../src/channel/intent.js';
 
 class FakeBridge {
@@ -29,7 +29,7 @@ const config = () => validateProjectConfig({
 });
 
 test('adapter is pre-send and floors on the device', () => {
-  const a = new CanopyChatChannelAdapter({ bridge: new FakeBridge(), chatId: '1' });
+  const a = new BasisChannelAdapter({ bridge: new FakeBridge(), chatId: '1' });
   assert.equal(a.floorsTrust, 'pre-send');
   const fm = a.floor('mijn 06-12345678 mag je hebben');
   assert.ok(fm.floored.includes('[') && !fm.floored.includes('12345678'));
@@ -61,7 +61,7 @@ test('NL round trip: free text -> "klaar" -> "verstuur alles" -> pod', async () 
   process.env.FP_LLM_BASEURL = mock.url;
   const pod = new InMemoryCentralPod();
   const bridge = new FakeBridge();
-  const bot = new CanopyChatBot({ bridge, pod, config: config() });
+  const bot = new BasisBot({ bridge, pod, config: config() });
   await bot.start();
 
   await bridge.emit({ chatId: 'a', messageId: '1', text: 'De wachtlijst bij de GGZ is al maanden veel te lang.' });
@@ -84,7 +84,7 @@ test('buttons still work alongside natural language', async () => {
   process.env.FP_LLM_BASEURL = mock.url;
   const pod = new InMemoryCentralPod();
   const bridge = new FakeBridge();
-  const bot = new CanopyChatBot({ bridge, pod, config: config() });
+  const bot = new BasisBot({ bridge, pod, config: config() });
   await bot.start();
   await bridge.emit({ chatId: 'b', messageId: '1', text: 'GGZ wachtlijst te lang' });
   await bridge.emit({ chatId: 'b', messageId: '2', text: 'fp:review' });       // button callback

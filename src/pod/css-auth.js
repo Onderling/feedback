@@ -3,7 +3,7 @@
 // Two paths:
 //   • server-side (Telegram bot service, activation service): Solid-OIDC client credentials
 //     → a DPoP fetch (clientCredentialsFetch).
-//   • browser (canopy-chat): the host already holds a @inrupt/solid-client-authn-browser
+//   • browser (basis): the host already holds a @inrupt/solid-client-authn-browser
 //     fetch (keys from @onderling/vault) — pass it straight to makeCssCentralPod as authedFetch.
 //
 // The Node auth lib is dynamically imported so the app stays dependency-free; inject `authn`
@@ -16,7 +16,7 @@ import { cryptoForProject } from './crypto-config.js';
 export async function clientCredentialsFetch({ cssUrl, clientId, clientSecret, authn } = {}) {
   if (!cssUrl || !clientId || !clientSecret) throw new Error('clientCredentialsFetch: cssUrl, clientId, clientSecret required');
   // Node-only auth lib, loaded lazily. The indirect specifier + @vite-ignore keep it opaque to
-  // browser bundlers (canopy-chat reaches this file but only ever uses the authedFetch path).
+  // browser bundlers (basis reaches this file but only ever uses the authedFetch path).
   const spec = '@inrupt/solid-client-authn-core';
   const lib = authn || await import(/* @vite-ignore */ spec);
   const { createDpopHeader, generateDpopKeyPair, buildAuthenticatedFetch } = lib;
@@ -55,7 +55,7 @@ export function refreshingClientCredentialsFetch(opts) {
 
 /**
  * A CssCentralPod from either an existing `authedFetch` (browser) or credentials (server).
- * Pass `flat:true` when podBase is the participant's OWN container (canopy-chat pre-send).
+ * Pass `flat:true` when podBase is the participant's OWN container (basis pre-send).
  * Crypto is derived from `config` (privacy menukaart) + whatever key material this process
  * holds (`projectPrivateKey`, `roster`) via cryptoForProject — or passed explicitly as
  * `seal`/`open`/`verify`, which take precedence.

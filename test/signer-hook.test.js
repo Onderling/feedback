@@ -1,6 +1,6 @@
 // M1.3 — the dispatcher signs consent with whatever identity it's given: either a
 // feedback-pipeline keypair OR a vault AgentIdentity (sign(bytes) + pubKey). Proves the
-// canopy-chat vault key works through the dispatcher → a verify pod accepts the write.
+// basis vault key works through the dispatcher → a verify pod accepts the write.
 //   node --test
 
 import { test } from 'node:test';
@@ -36,7 +36,7 @@ test('dispatcher signs with a vault AgentIdentity → a verify pod accepts the c
   process.env.FP_LLM_BASEURL = mock.url;
   t.after(async () => { if (prev === undefined) delete process.env.FP_LLM_BASEURL; else process.env.FP_LLM_BASEURL = prev; await mock.close(); });
 
-  // a participant whose key lives in the canopy-chat vault as an AgentIdentity
+  // a participant whose key lives in the basis vault as an AgentIdentity
   const agent = new AgentIdentity({ seed: new Uint8Array(randomBytes(32)), vault: {} });
   const roster = new IdentityRoster();
   roster.bind('cc:a', agent.pubKey);

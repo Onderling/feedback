@@ -7,7 +7,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { startMockLlm } from './helpers/mock-llm.js';
 import { PeerBridge } from '../src/channel/peer-bridge.js';
-import { CanopyChatBot } from '../src/channel/canopy-chat-bot.js';
+import { BasisBot } from '../src/channel/basis-bot.js';
 import { InMemoryCentralPod } from '../src/pod/central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
 import { IdentityRoster, generateParticipantIdentity, makeContributionVerifier } from '../src/pod/signing.js';
@@ -42,10 +42,10 @@ test('PeerBridge requires a peer with sendTo()', () => {
   assert.equal(new PeerBridge({ peer: { sendTo: async () => {} } }).id, 'peer');
 });
 
-test('accepts canopy-chat\'s generic contact-msg + replies contact-reply, echoing threadId', async () => {
+test('accepts basis\'s generic contact-msg + replies contact-reply, echoing threadId', async () => {
   // The platform Contacten DM thread speaks the GENERIC channel (contact-msg /
   // contact-reply, carrying threadId). The bot must answer it in kind so a default
-  // canopy-chat contact thread reaches the feedback bot with no platform coupling.
+  // basis contact thread reaches the feedback bot with no platform coupling.
   const sentTo = [];
   const bridge = new PeerBridge({ peer: { sendTo: async (to, payload) => sentTo.push({ to, payload }) } });
   const received = [];
@@ -77,7 +77,7 @@ test('external bot over a peer link: full journey, unsigned write accepted (no v
   const mesh = fakePeerMesh();
   const pod = new InMemoryCentralPod();
   const bridge = new PeerBridge({ peer: mesh.peerFor('bot') });
-  const bot = new CanopyChatBot({ bridge, pod, config: config(), participantFor: (c) => c });   // no identityFor → unsigned
+  const bot = new BasisBot({ bridge, pod, config: config(), participantFor: (c) => c });   // no identityFor → unsigned
   await bot.start();
   mesh.register('bot', bridge.onPeerMessage);
 
@@ -103,7 +103,7 @@ test('external bot under privacy.verify: unsigned write refused gracefully (veri
   roster.bind('bob', id.publicKey);
   const pod = new InMemoryCentralPod({ verify: makeContributionVerifier({ roster, projectId: 'peer' }) });
   const bridge = new PeerBridge({ peer: mesh.peerFor('bot') });
-  const bot = new CanopyChatBot({ bridge, pod, config: config({ verify: true }), participantFor: (c) => c });   // unsigned
+  const bot = new BasisBot({ bridge, pod, config: config({ verify: true }), participantFor: (c) => c });   // unsigned
   await bot.start();
   mesh.register('bot', bridge.onPeerMessage);
   const replies = [];

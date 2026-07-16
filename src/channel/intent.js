@@ -1,5 +1,5 @@
-// Natural-language intent classification for the canopy-chat surface (free text, no slash
-// commands). canopy-chat historically let participants type naturally and an LLM mapped
+// Natural-language intent classification for the basis surface (free text, no slash
+// commands). basis historically let participants type naturally and an LLM mapped
 // intent; this is that layer. Hybrid, in the floors spirit: a deterministic fast-path for
 // short, unambiguous control utterances, then the LLM (the app's own route — local /
 // Privatemode / OVH via src/ollama.js) for the rest, defaulting to "it's feedback content".

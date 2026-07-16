@@ -14,7 +14,7 @@
 // hook + usage metering) once the app joins the pnpm workspace — see
 // feedback-pipeline-build-proposal-en.md.
 
-// A host without env (the browser / canopy-chat) injects the route here. Set from the
+// A host without env (the browser / basis) injects the route here. Set from the
 // project config's llm block at startup; takes precedence over env when present.
 let routeOverride = null;
 export function setLlmRoute(route) {
@@ -43,7 +43,7 @@ const ROUTE_DEFAULT_BASE = {
 // privatemode endpoint is only allowed when attestation is configured (PRIVATEMODE_ATTESTATION).
 //
 // ⚠ CANONICAL HOME: this guard now lives in `@onderling/llm-client/routeSafety` (isLoopbackBase ·
-// attestationConfigured · assertConfidentialRouteSafe), shared by canopy-chat + the SDK. This is a
+// attestationConfigured · assertConfidentialRouteSafe), shared by basis + the SDK. This is a
 // TEMPORARY FORK — feedback-pipeline is not yet in the pnpm workspace, so it can't import the package
 // (see header). When it joins, DELETE these locals and import from @onderling/llm-client/routeSafety.
 function isLoopbackBase(base) {

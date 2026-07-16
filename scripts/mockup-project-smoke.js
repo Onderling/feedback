@@ -11,7 +11,7 @@
 import { startMockLlm } from '../test/helpers/mock-llm.js';
 import { InternalBus } from '@onderling/core';
 import { InternalBusBridge, connectFeedbackParticipant } from '../src/channel/internal-bus-bridge.js';
-import { CanopyChatBot } from '../src/channel/canopy-chat-bot.js';
+import { BasisBot } from '../src/channel/basis-bot.js';
 import { CssCentralPod } from '../src/pod/css-central-pod.js';
 import { ByoCentralPod } from '../src/pod/byo-central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
@@ -70,7 +70,7 @@ for (const person of PEOPLE) {
     seal: makeSealer([key.publicKey]), verify: makeContributionVerifier({ roster, projectId }),
   });
   const bus = new InternalBus();
-  const bot = new CanopyChatBot({ bridge: new InternalBusBridge({ bus, address: 'fp-bot' }), pod: writer, config, participantFor: () => person.id, identityFor: () => idn });
+  const bot = new BasisBot({ bridge: new InternalBusBridge({ bus, address: 'fp-bot' }), pod: writer, config, participantFor: () => person.id, identityFor: () => idn });
   await bot.start();
   const client = connectFeedbackParticipant(bus, { chatId: person.id });
   await client.send(person.msg); await client.send('klaar'); await client.send('verstuur alles');

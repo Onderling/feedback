@@ -24,7 +24,7 @@ export function containerAcp(containerUri, { participantWebId, ownerWebId, reade
     applies.push('<#pOwner>');
   }
   // writers — e.g. a Telegram bot SERVICE that writes consented contributions on behalf of
-  // a participant (the post-receipt channel; canopy-chat participants write themselves).
+  // a participant (the post-receipt channel; basis participants write themselves).
   writers.forEach((w, i) => {
     policies.push(`<#pW${i}> a acp:Policy; acp:allow acl:Read, acl:Write, acl:Append; acp:anyOf <#mW${i}>.`);
     matchers.push(`<#mW${i}> a acp:Matcher; acp:agent <${w}>.`);

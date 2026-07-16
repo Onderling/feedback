@@ -1,5 +1,5 @@
 // M10 — full mockup project, end-to-end. A gemeente-X feedback project for N simulated
-// participants, driven THROUGH the co-hosted canopy bot (InternalBusBridge + CanopyChatBot, the
+// participants, driven THROUGH the co-hosted canopy bot (InternalBusBridge + BasisBot, the
 // M1–M5 channel), honouring the BYO invariant (consent parks signed+sealed on each participant's
 // OWN pod; the central only READS via ByoCentralPod), then k-anonymity aggregation and curator
 // release → participant notify. Proves the whole composed system works as one mockup project.
@@ -10,7 +10,7 @@ import assert from 'node:assert/strict';
 import { startMockLlm } from './helpers/mock-llm.js';
 import { InternalBus } from '@onderling/core';
 import { InternalBusBridge, connectFeedbackParticipant } from '../src/channel/internal-bus-bridge.js';
-import { CanopyChatBot } from '../src/channel/canopy-chat-bot.js';
+import { BasisBot } from '../src/channel/basis-bot.js';
 import { CssCentralPod } from '../src/pod/css-central-pod.js';
 import { ByoCentralPod } from '../src/pod/byo-central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
@@ -76,7 +76,7 @@ test('M10 — mockup project: bot → BYO park → k-anon aggregate → curator 
     // the co-hosted bot on the participant's own bus, writing to their own pod, signing as them.
     const bus = new InternalBus();
     const bridge = new InternalBusBridge({ bus, address: 'fp-bot' });
-    const bot = new CanopyChatBot({ bridge, pod: writer, config, participantFor: () => person.id, identityFor: () => idn });
+    const bot = new BasisBot({ bridge, pod: writer, config, participantFor: () => person.id, identityFor: () => idn });
     await bot.start();
 
     // drive the NL journey through the bot (mock intent: 'klaar'→review, 'alles'→consent_all).

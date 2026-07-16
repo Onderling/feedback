@@ -1,6 +1,6 @@
 // Shared control grammar + action executor for every channel. A channel front-end turns
 // inbound text into an ACTION (see shapes below) — Telegram by an explicit slash/button
-// grammar, canopy-chat by a natural-language intent classifier — and both hand the action
+// grammar, basis by a natural-language intent classifier — and both hand the action
 // here. This keeps the participant journey identical across surfaces (architecture §1.3).
 //
 // Action shapes:
@@ -13,7 +13,7 @@
 
 /** Parse the explicit control grammar (slash commands + fp: button callbacks). Returns an
  *  action, or null when the text is not a control utterance (a channel decides what null
- *  means: Telegram → a feedback message; canopy-chat → run the NL classifier). */
+ *  means: Telegram → a feedback message; basis → run the NL classifier). */
 export function parseControl(text) {
   const t = (text || '').trim();
   if (t === '/start' || t === '/menu' || t === 'fp:menu') return { kind: 'menu' };

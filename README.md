@@ -68,7 +68,7 @@ npm run full-pipeline       # end-to-end: clean → consent → pod → aggregat
 npm run llm-health          # is a model actually answering?
 
 # channels + operations:
-npm run canopy-bot          # the live bot (Basis circles + Telegram)
+npm run basis-bot          # the live bot (Basis circles + Telegram)
 npm run portal              # the project-lead portal
 npm run mcp                 # the MCP tool server
 ```

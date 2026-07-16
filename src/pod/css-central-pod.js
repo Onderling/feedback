@@ -20,7 +20,7 @@ export class CssCentralPod {
   //    contributions live in <base><participant>/. A server-side writer (the TG bot) or the
   //    aggregation reads/writes across all sub-containers.
   //  • `flat:true` — `base` IS one participant's own container (<pod>central/<them>/); writes
-  //    go straight into it (<base><id>.json). This is canopy-chat: the participant writes
+  //    go straight into it (<base><id>.json). This is basis: the participant writes
   //    their OWN container with their browser-key fetch (the `participant` arg is just the
   //    pseudonym stored in the record).
   // Optional `{ seal, open }` add at-rest sealing (default off → unchanged behaviour).

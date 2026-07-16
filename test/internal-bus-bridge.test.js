@@ -1,5 +1,5 @@
 // M1 — InternalBusBridge: the production in-process bridge. The bot is co-hosted with the
-// participant on ONE real @onderling/core InternalBus (no network); the full canopy-chat journey
+// participant on ONE real @onderling/core InternalBus (no network); the full basis journey
 // runs over it and the consent write is SIGNED (accepted by a verify-enabled pod). Proves the
 // bridge is a drop-in MessagingBridge for the real bus, not a test-only fake.
 //   node --test
@@ -9,7 +9,7 @@ import assert from 'node:assert/strict';
 import { startMockLlm } from './helpers/mock-llm.js';
 import { InternalBus } from '@onderling/core';
 import { InternalBusBridge, connectFeedbackParticipant } from '../src/channel/internal-bus-bridge.js';
-import { CanopyChatBot } from '../src/channel/canopy-chat-bot.js';
+import { BasisBot } from '../src/channel/basis-bot.js';
 import { InMemoryCentralPod } from '../src/pod/central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
 import { generateParticipantIdentity, IdentityRoster, makeContributionVerifier } from '../src/pod/signing.js';
@@ -47,7 +47,7 @@ test('full journey over a real InternalBus → SIGNED consent write, replies ove
   // co-host the bot on a shared bus; the participant connects to the SAME bus
   const bus = new InternalBus();
   const bridge = new InternalBusBridge({ bus, address: 'fp-bot' });
-  const bot = new CanopyChatBot({ bridge, pod, config: config(), participantFor: (c) => c, identityFor: () => id });
+  const bot = new BasisBot({ bridge, pod, config: config(), participantFor: (c) => c, identityFor: () => id });
   await bot.start();
   const me = connectFeedbackParticipant(bus, { botAddress: 'fp-bot', chatId: 'anils' });
 
@@ -73,7 +73,7 @@ test('property-layer: a charter consent data-turn rides the consented contributi
   const pod = new InMemoryCentralPod();                       // no verify → forAggregation returns all
   const cfg = validateProjectConfig({ projectId, llm: { route: 'local', model: 'mock' }, aggregation: { k: 1 } });
   const bus = new InternalBus();
-  const bot = new CanopyChatBot({ bridge: new InternalBusBridge({ bus, address: 'fp-bot' }), pod, config: cfg, participantFor: (c) => c });
+  const bot = new BasisBot({ bridge: new InternalBusBridge({ bus, address: 'fp-bot' }), pod, config: cfg, participantFor: (c) => c });
   await bot.start();
   const me = connectFeedbackParticipant(bus, { botAddress: 'fp-bot', chatId: 'anils' });
 
@@ -98,7 +98,7 @@ test('property-layer: back-compat — no charter turn → the contribution carri
   const pod = new InMemoryCentralPod();
   const cfg = validateProjectConfig({ projectId, llm: { route: 'local', model: 'mock' }, aggregation: { k: 1 } });
   const bus = new InternalBus();
-  const bot = new CanopyChatBot({ bridge: new InternalBusBridge({ bus, address: 'fp-bot' }), pod, config: cfg, participantFor: (c) => c });
+  const bot = new BasisBot({ bridge: new InternalBusBridge({ bus, address: 'fp-bot' }), pod, config: cfg, participantFor: (c) => c });
   await bot.start();
   const me = connectFeedbackParticipant(bus, { botAddress: 'fp-bot', chatId: 'anils' });
 
@@ -117,7 +117,7 @@ test('two participants on one bus stay isolated', async (t) => {
   await withMockLlm(t);
   const pod = new InMemoryCentralPod();
   const bus = new InternalBus();
-  const bot = new CanopyChatBot({ bridge: new InternalBusBridge({ bus, address: 'fp-bot' }), pod, config: config(), participantFor: (c) => c });
+  const bot = new BasisBot({ bridge: new InternalBusBridge({ bus, address: 'fp-bot' }), pod, config: config(), participantFor: (c) => c });
   await bot.start();
   const a = connectFeedbackParticipant(bus, { chatId: 'a' });
   const b = connectFeedbackParticipant(bus, { chatId: 'b' });

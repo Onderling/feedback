@@ -40,7 +40,7 @@ export default {
   verificationWithdrawn: 'Niets gedeeld — je feedback blijft bij jou.',
   verifyNone: 'Er staat geen samenvatting klaar om te verifiëren.',
   // dit project vereist een geverifieerde identiteit, die dit kanaal niet kan bieden
-  verificationRequired: 'Dit project accepteert alleen bijdragen van een geverifieerde identiteit. Doe mee via de canopy-app, die je bijdrage op je eigen apparaat ondertekent.',
+  verificationRequired: 'Dit project accepteert alleen bijdragen van een geverifieerde identiteit. Doe mee via de Basis-app, die je bijdrage op je eigen apparaat ondertekent.',
   consentFailed: (n) => `${n} bijdrage(n) konden niet worden opgeslagen en zijn niet verstuurd. Er is niets bewaard.`,
 
   contributionsHeader: 'Je bijdragen:',
