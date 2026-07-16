@@ -1,7 +1,7 @@
 // canopy-chat channel — the natural-language (pre-send) surface. Proves free-text input
 // drives the same dispatcher journey as Telegram, via the intent classifier (deterministic
 // fast-path + the mock LLM for the ambiguous rest). Fake bridge = the same minimal
-// onMessage/sendReply contract the @canopy/chat-agent InMemoryBridge implements.
+// onMessage/sendReply contract the @onderling/chat-agent InMemoryBridge implements.
 
 import { test } from 'node:test';
 import assert from 'node:assert/strict';

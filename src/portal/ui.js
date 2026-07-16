@@ -2,7 +2,7 @@
 // server. A project lead fills the menukaart, sees the project dashboard, and mints invite
 // links. All logic is the small JSON API in server.js; this is just the surface.
 
-import { attributeKeys, bucketsFor } from '@canopy/attribute-charter';
+import { attributeKeys, bucketsFor } from '@onderling/attribute-charter';
 
 export function portalHtml({ inviteBase } = {}) {
   // The charter picker rows — one per curated coarse vocabulary attribute. The lead may

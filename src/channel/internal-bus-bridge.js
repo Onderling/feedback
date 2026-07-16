@@ -1,11 +1,11 @@
 // InternalBusBridge — the PRODUCTION in-process MessagingBridge (M1). The feedback bot is
-// co-hosted with the participant's chat agent on the SAME shared @canopy/core InternalBus, so a
+// co-hosted with the participant's chat agent on the SAME shared @onderling/core InternalBus, so a
 // feedback turn never leaves the process — no network, no transport. It is the real partner for
 // CanopyChatBot (InMemoryBridge stays the test double).
 //
-// Implements @canopy/chat-agent's MessagingBridge contract (id / start / stop / onMessage /
+// Implements @onderling/chat-agent's MessagingBridge contract (id / start / stop / onMessage /
 // sendReply). The bus is INJECTED (the canopy-chat host owns it — see realAgent.js's shared
-// `bus`), so this module imports no @canopy/* itself and stays portable per the node-portability
+// `bus`), so this module imports no @onderling/* itself and stays portable per the node-portability
 // convention. Channels on the bus:
 //   fp:msg:<botAddress>   — participant → bot (a feedback turn)
 //   fp:reply:<chatId>     — bot → participant (a rendered reply)

@@ -19,8 +19,8 @@ model) and `HOUSEHOLD-LLM-CIRCLE-JOURNEYS.md` (the shared-pod circle).
 ## (Q2) Lift at-rest sealing to a SUBSTRATE
 Today it's app-local (`feedback-pipeline/pod/project-seal.js` + `crypto-config.js`; household has
 its own `groupKeyId`). The household circle makes it **≥2 consumers → rule-of-two met**. Move it to
-a **`sealing/` module in `@canopy/pod-client`** (which already has `sharing/`): transparent
-**seal-on-write / open-on-read**, key custody via `@canopy/vault`. Extract + generalize
+a **`sealing/` module in `@onderling/pod-client`** (which already has `sharing/`): transparent
+**seal-on-write / open-on-read**, key custody via `@onderling/vault`. Extract + generalize
 `project-seal` (single-recipient → multi-recipient / group-key). ~Medium effort; needed for the
 household shared pod, so a good first task.
 
@@ -108,5 +108,5 @@ plaintext to serve bytes + enforce ACL on cleartext paths.
 ## The coherent household model
 **Content sealed with a shared group key** + **structure cleartext (opaque ids)** + a **sealed
 index layer** for query/RAG + the **control-agent owning key+ACL** on join/leave — all behind a
-**`@canopy/pod-client` `sealing` substrate**. Substrate-lift + shared-key = the directly-actionable
+**`@onderling/pod-client` `sealing` substrate**. Substrate-lift + shared-key = the directly-actionable
 household pieces.

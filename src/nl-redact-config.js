@@ -1,4 +1,4 @@
-// NL redaction config — the Dutch-specific DATA the generic @canopy/redaction
+// NL redaction config — the Dutch-specific DATA the generic @onderling/redaction
 // engine consumes. This is the locale content that USED to be hard-coded inside
 // redact.js + names.js: the ordered structured rules, the placeholder strings,
 // the first-name gazetteer and the honorific/relational/job-title prefixes.
@@ -34,7 +34,7 @@ const STREET = 'straat|laan|weg|plein|gracht|kade|hof|dreef|steeg|dijk|pad|baan|
 // ── structured rules (ordered) ──────────────────────────────────────
 // ORDER MATTERS: url/email/iban consume their digit runs before the phone pass,
 // so they can't be mis-read as phone numbers. The trailing BSN/phone rules carry
-// validators (looked up by name in @canopy/redaction's registry).
+// validators (looked up by name in @onderling/redaction's registry).
 export const STRUCTURED_RULES = [
   { type: 'url',      pattern: /\bhttps?:\/\/[^\s]+|\bwww\.[^\s]+/gi },
   { type: 'email',    pattern: /\b[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}\b/gi },

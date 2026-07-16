@@ -61,7 +61,7 @@ Postures are **bundles**; some combos contradict (P2 + server-side search is imp
 constrained: **live → per-resource; backup/archive → whole-blob**.
 
 ## The substrate primitives (one set powers every posture)
-Build these in `@canopy/pod-client` (rule-of-two met: feedback + household). The posture is *which* you
+Build these in `@onderling/pod-client` (rule-of-two met: feedback + household). The posture is *which* you
 turn on:
 - **`sealing/` module** — envelope encryption (per-resource CEK + recipient/group-key wrap), lifted +
   generalized from `project-seal`. **Opt-in** (Q2 re-scoped: the primitive, *not* a forced default).

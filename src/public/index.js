@@ -1,4 +1,4 @@
-// Public surface for @canopy-app/feedback-pipeline — the ONE sanctioned import point for
+// Public surface for @onderling-app/feedback-pipeline — the ONE sanctioned import point for
 // consumers (today: canopy-chat's feedback surface). Everything else under src/ is internal.
 //
 // F1 of the feedback repo-split (plans/PLAN-feedback-split.md): give feedback a public boundary

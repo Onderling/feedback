@@ -10,7 +10,7 @@
 // The `chat()` signature and return shape are unchanged, so every caller
 // (pipeline / triage / passes) keeps working across all routes.
 //
-// NB this still keeps the door open to graduate to `@canopy/llm-client` (audit
+// NB this still keeps the door open to graduate to `@onderling/llm-client` (audit
 // hook + usage metering) once the app joins the pnpm workspace — see
 // feedback-pipeline-build-proposal-en.md.
 
@@ -42,10 +42,10 @@ const ROUTE_DEFAULT_BASE = {
 // proxy runs on IS the participant's machine). Until the M7 enclave gateway ships, a non-loopback
 // privatemode endpoint is only allowed when attestation is configured (PRIVATEMODE_ATTESTATION).
 //
-// ⚠ CANONICAL HOME: this guard now lives in `@canopy/llm-client/routeSafety` (isLoopbackBase ·
+// ⚠ CANONICAL HOME: this guard now lives in `@onderling/llm-client/routeSafety` (isLoopbackBase ·
 // attestationConfigured · assertConfidentialRouteSafe), shared by canopy-chat + the SDK. This is a
 // TEMPORARY FORK — feedback-pipeline is not yet in the pnpm workspace, so it can't import the package
-// (see header). When it joins, DELETE these locals and import from @canopy/llm-client/routeSafety.
+// (see header). When it joins, DELETE these locals and import from @onderling/llm-client/routeSafety.
 function isLoopbackBase(base) {
   if (!base) return false;
   try {

@@ -1,4 +1,4 @@
-// Substrate integration: the Phase-2 central pod running on the REAL @canopy/pseudo-pod
+// Substrate integration: the Phase-2 central pod running on the REAL @onderling/pseudo-pod
 // store (write/read/list/delete over a memory backend), then flowing into Task-2
 // aggregation. Proves the interface works on the actual substrate, not just the stub.
 //   node --test
@@ -11,7 +11,7 @@ import { buildContribution } from '../src/pod/contribution.js';
 import { aggregateForProject } from '../src/run.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
 
-test('central pod on @canopy/pseudo-pod: write → list → withdraw → markIncluded', async () => {
+test('central pod on @onderling/pseudo-pod: write → list → withdraw → markIncluded', async () => {
   const pod = new PseudoPodCentralPod();
   await pod.write('part-a', buildContribution({ id: 'a1', text: 'GGZ wachtlijst te lang.' }, { lang: 'nl' }));
   await pod.write('part-a', buildContribution({ id: 'a2', text: 'Parkeren te duur.' }));

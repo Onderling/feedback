@@ -1,5 +1,5 @@
 // M1 — InternalBusBridge: the production in-process bridge. The bot is co-hosted with the
-// participant on ONE real @canopy/core InternalBus (no network); the full canopy-chat journey
+// participant on ONE real @onderling/core InternalBus (no network); the full canopy-chat journey
 // runs over it and the consent write is SIGNED (accepted by a verify-enabled pod). Proves the
 // bridge is a drop-in MessagingBridge for the real bus, not a test-only fake.
 //   node --test
@@ -7,7 +7,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { startMockLlm } from './helpers/mock-llm.js';
-import { InternalBus } from '@canopy/core';
+import { InternalBus } from '@onderling/core';
 import { InternalBusBridge, connectFeedbackParticipant } from '../src/channel/internal-bus-bridge.js';
 import { CanopyChatBot } from '../src/channel/canopy-chat-bot.js';
 import { InMemoryCentralPod } from '../src/pod/central-pod.js';

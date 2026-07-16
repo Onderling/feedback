@@ -5,7 +5,7 @@
 // file only does Telegram-specific routing (architecture §1.3 "build once, two adapters").
 //
 // Decoupled from the substrate via the minimal bridge interface (onMessage / sendReply /
-// start / stop) — the real @canopy/chat-agent TelegramBridge satisfies it; a fake bridge
+// start / stop) — the real @onderling/chat-agent TelegramBridge satisfies it; a fake bridge
 // does in tests. Pseudonyms come from `participantFor(chatId)` (default tg:<chatId>; a real
 // deployment passes an HMAC so the pod never holds a reversible chat id).
 

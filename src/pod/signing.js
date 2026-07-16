@@ -64,7 +64,7 @@ export function signContribution({ projectId, participant, contribution }, priva
 /**
  * Build the `{sig, pubKey}` write-meta for a contribution from a participant identity (M1.3).
  * The identity may be EITHER a feedback-pipeline keypair (`{publicKey, privateKey:"<pub>.<seed>"}`)
- * OR any signer exposing `sign(bytes)->Uint8Array` + a pubKey (e.g. @canopy/core `AgentIdentity`
+ * OR any signer exposing `sign(bytes)->Uint8Array` + a pubKey (e.g. @onderling/core `AgentIdentity`
  * held in the canopy-chat vault) — so the dispatcher can sign with the participant's real key
  * without knowing its storage format. Returns `{}` when identity is absent (unsigned).
  */

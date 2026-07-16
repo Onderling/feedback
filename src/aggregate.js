@@ -18,7 +18,7 @@ import { labelMessages, canonicalDomain } from './triage.js';
 import { isSensitiveDomain, detectReident, detectSensitiveContent, detectContactRequest, sensitivityFlags } from './signals.js';
 import { sensitiveCategory, rejectReason, ESCALATION_CATEGORIES } from './categories.js';
 import { PREFERRED_LANGUAGE } from './config.js';
-import { suppressRareAttributes, attributeKDefault } from '@canopy/attribute-charter';
+import { suppressRareAttributes, attributeKDefault } from '@onderling/attribute-charter';
 
 /** Layer-2 (server-side) signal routing gate. An LLM-labelled escalation routes to
  *  the signal track only if the project enables that category; a floor-confirmed
@@ -53,7 +53,7 @@ export function partitionByThreshold(groups, k) {
 /**
  * Property-layer segmentation (RESEARCH-context only). Attributes belong to the PARTICIPANT — every
  * contribution a participant releases carries the SAME disclosed coarse values — so we count DISTINCT
- * participants per exact attribute-combo and suppress (via @canopy/attribute-charter) the attributes of
+ * participants per exact attribute-combo and suppress (via @onderling/attribute-charter) the attributes of
  * anyone whose combo is held by fewer than `attributeK` participants BEFORE any segment is exposed. The
  * feedback TEXT still aggregates in full; only the segmentation is hidden for rare combos. `charterHash`
  * is NOT identifying (identical for everyone on the charter), so it rides through even when suppressed.

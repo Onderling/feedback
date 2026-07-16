@@ -8,7 +8,7 @@
 // on the project"); a few are configurable-with-default (review mode, language).
 
 import { z } from 'zod';
-import { createCharter } from '@canopy/attribute-charter';
+import { createCharter } from '@onderling/attribute-charter';
 
 /** D3 — escalation categories that can trigger the signal-track offer. Mirrors
  *  ESCALATION_CATEGORIES in categories.js; tracked in the ethics doc §8. */
@@ -131,7 +131,7 @@ export const ProjectConfigSchema = z.object({
   // CHARTER: a project lead may declare ONCE, at creation, a FEW coarse background
   // attributes participants can CHOOSE to attach to their pseudonymous feedback. It is
   // OPTIONAL — a project without a charter behaves exactly as before (back-compat).
-  // The block here is only the wire shape; the real gate is @canopy/attribute-charter's
+  // The block here is only the wire shape; the real gate is @onderling/attribute-charter's
   // createCharter (cap ≤3, coarse-vocabulary-only, no dups, per-attribute purpose),
   // applied in validateProjectConfig below so an invalid charter is REJECTED at create.
   // Immutable per version: to request more, bump the version (a new charterHash).
@@ -155,7 +155,7 @@ export const ProjectConfigSchema = z.object({
 });
 
 /** Validate + fill defaults. Throws a zod error on an invalid config. When a charter
- *  is present it is additionally validated + normalised through @canopy/attribute-charter
+ *  is present it is additionally validated + normalised through @onderling/attribute-charter
  *  (the single source of the charter rules: cap ≤3, coarse vocabulary only, per-attr
  *  purpose). An invalid charter throws a clear Error the portal surfaces as a 400. */
 export function validateProjectConfig(raw) {

@@ -1,5 +1,5 @@
 // Live Telegram smoke (Tier 2) — runs the feedback bot against the REAL
-// @canopy/chat-agent TelegramBridge, so you can talk to it from Telegram and watch the
+// @onderling/chat-agent TelegramBridge, so you can talk to it from Telegram and watch the
 // whole journey: message -> floor (post-receipt, in this bot service) -> /klaar review ->
 // consent buttons -> contribution written to the central pod.
 //

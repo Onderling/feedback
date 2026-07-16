@@ -5,8 +5,8 @@
 //
 // The adapter is deliberately decoupled from the substrate: it talks to a minimal `bridge`
 // with one method — `sendReply({ chatId, replyTo?, text, buttons? })` — which the real
-// @canopy/chat-agent TelegramBridge satisfies, and which a fake bridge satisfies in tests.
-// So this file (and the app's tests) carry NO @canopy build dependency.
+// @onderling/chat-agent TelegramBridge satisfies, and which a fake bridge satisfies in tests.
+// So this file (and the app's tests) carry NO @onderling build dependency.
 
 import { floorMessage } from '../floors/index.js';
 import { getStrings } from '../strings/index.js';

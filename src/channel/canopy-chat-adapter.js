@@ -5,7 +5,7 @@
 // dispatcher + the same renderer/strings as Telegram.
 //
 // Decoupled from the substrate via the same minimal bridge contract (sendReply) — the
-// @canopy/chat-agent InMemoryBridge satisfies it; a fake bridge does in tests.
+// @onderling/chat-agent InMemoryBridge satisfies it; a fake bridge does in tests.
 
 import { floorMessage } from '../floors/index.js';
 import { getStrings } from '../strings/index.js';

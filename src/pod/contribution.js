@@ -25,7 +25,7 @@ export const ContributionSchema = z.object({
   // Property layer (charter). OPTIONAL disclosed COARSE background attributes — a map of
   // vocabulary key → coarse value (e.g. {place:'Utrecht', ageBand:'35-54'}), chosen by the
   // participant from the charter's requested set. Values are already coarse (from the
-  // @canopy/attribute-charter VOCABULARY); NO name / free-text ever rides here. Absent =
+  // @onderling/attribute-charter VOCABULARY); NO name / free-text ever rides here. Absent =
   // withheld (no marker). The aggregation attributeK-suppresses rare combos at READ.
   attributes: z.record(z.string(), z.string()).optional(),
   // The hash of the charter the participant agreed to (binds this disclosure to a specific,

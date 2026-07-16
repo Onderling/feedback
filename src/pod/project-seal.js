@@ -4,10 +4,10 @@
 // node:crypto construction) now lives in `packages/pod-client/src/sealing/` — lifted there for the
 // household shared-pod group key (rule-of-two). This file preserves feedback's existing API verbatim
 // so the 8 consumers and all on-pod envelopes are unchanged; `generateProjectKeypair` is the substrate's
-// generic `generateKeypair`. Imported through the substrate's PUBLIC surface (`@canopy/pod-client/sealing`,
+// generic `generateKeypair`. Imported through the substrate's PUBLIC surface (`@onderling/pod-client/sealing`,
 // F1 boundary) rather than reaching into its raw src/.
 
 export {
   recipientId, isSealed, seal, open, makeSealer, makeOpener,
   generateKeypair as generateProjectKeypair,
-} from '@canopy/pod-client/sealing';
+} from '@onderling/pod-client/sealing';

@@ -5,14 +5,14 @@ user-driven verify-summary loop, running on the user's own Solid pod. Part of th
 line (OR / zorg / whistleblower "feedback-infrastructuur").
 
 Formerly `apps/feedback-pipeline` in the `canopy-mono` monorepo; **split out into its own repo** — the first
-"third-party via SDK" tenant of the canopy platform.
+"third-party via SDK" tenant of the Onderling platform.
 
 ## Standalone repo
 
-- **Consumes the canopy platform via `@canopy/*` packages.** *Interim:* local `file:` deps pointing at a
-  sibling `canopy-mono` checkout (`../canopy-mono/packages/*`). These swap to published `@canopy/…@^x` once
-  the SDK is published — a `package.json`-only change, no source edits (imports are already bare `@canopy/*`).
-- **Deps:** `@canopy/core`, `@canopy/pod-client`, `@canopy/pseudo-pod`, `@canopy/redaction` (+ non-canopy:
+- **Consumes the Onderling platform via `@onderling/*` packages.** *Interim:* local `file:` deps pointing at a
+  sibling `canopy-mono` checkout (`../canopy-mono/packages/*`). These swap to published `@onderling/…@^x` once
+  the SDK is published — a `package.json`-only change, no source edits (imports are already bare `@onderling/*`).
+- **Deps:** `@onderling/core`, `@onderling/pod-client`, `@onderling/pseudo-pod`, `@onderling/redaction` (+ non-canopy:
   `@inrupt/solid-client-authn-core`, `@modelcontextprotocol/sdk`, `eld`, `zod`).
 - **Install + test:** `npm install` → `npm test` (node:test — 288 passing).
 - **Provenance:** carved from `canopy-mono` via `git filter-repo`. The split plan lives in the monorepo's
@@ -118,5 +118,5 @@ OLLAMA_URL=http://otherbox:11434 npm run clean-smoke   # point at a remote Ollam
 Scaffold + baseline findings only. Step 1 (regex) is implemented and unit-tested;
 steps 2–3 are prompt + harness, validated by hand against today's sweep but **not
 yet run inside this app** (the model sweeps are the user's to trigger). No
-Telegram, no pod, no `@canopy/*` wiring yet — see the tomorrow-plan. All fixtures
+Telegram, no pod, no `@onderling/*` wiring yet — see the tomorrow-plan. All fixtures
 are synthetic.

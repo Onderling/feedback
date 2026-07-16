@@ -12,11 +12,11 @@
 // evidence — several tests assert the WRONG behaviour on purpose, labelled as
 // known limitations.
 //
-// As of P0 the gazetteer ENGINE lives in @canopy/redaction. This module is a
+// As of P0 the gazetteer ENGINE lives in @onderling/redaction. This module is a
 // THIN ADAPTER over the NL gazetteer DATA (./nl-redact-config.js). Behaviour is
 // identical to the pre-extraction version.
 
-import { redactGazetteer } from '@canopy/redaction';
+import { redactGazetteer } from '@onderling/redaction';
 import { NL_GAZETTEER, PLACEHOLDER_NAME, NAMES } from './nl-redact-config.js';
 
 export { PLACEHOLDER_NAME };

@@ -1,5 +1,5 @@
 // canopy-chat smoke (Tier 2) — runs the natural-language feedback bot against the REAL
-// @canopy/chat-agent InMemoryBridge, so we prove our CanopyChatBot satisfies the actual
+// @onderling/chat-agent InMemoryBridge, so we prove our CanopyChatBot satisfies the actual
 // bridge contract (onMessage / sendReply / simulateIncoming + outbox), driving the same
 // journey by free text: message -> "klaar" (review) -> "verstuur alles" (consent) -> pod.
 //

@@ -66,7 +66,7 @@ unlocks once), and it **controls egress** (so apps can't phone home).
   authenticates *and* yields the decryption key. The target UX.
 - **Or derive both from one passphrase** (ProtonMail/Bitwarden): `argon2(passphrase)` → an auth
   value + a local encryption key. Clean when the runtime owns the login surface (it does).
-- **Reuse what exists:** canopy's `@canopy/vault` + `AgentIdentity` already model a device-held
+- **Reuse what exists:** canopy's `@onderling/vault` + `AgentIdentity` already model a device-held
   identity unlocked once; the runtime is the natural host for it.
 
 ### 3.2 Egress control — whitelist by *destination*, not by *data type*
@@ -153,7 +153,7 @@ repo is the seed of this.
 
 - Tauri vs Electron for the desktop MVP (lean Tauri).
 - Manifest format + the exact mediated key-API surface (`sign`/`open`/`seal`/pod-scope grants) —
-  should dovetail with `@canopy/vault` + `AgentIdentity` and the seal/verify model.
+  should dovetail with `@onderling/vault` + `AgentIdentity` and the seal/verify model.
 - Passkey/PRF vs passphrase-derived key as the default unlock.
 - App registry / signing model and who curates it.
 - Recovery story for device loss (link to the project escrow/recovery design).

@@ -6,7 +6,7 @@
 // — host-blind two-way notify. Operational notices without an enc key are stored as-is.
 //
 // `InMemoryNotifier` is the testable/dev shape (pull inbox). `createPodNotifier` maps the same
-// `notify()` onto the real substrate @canopy/notify-envelope (push delivery to pods, with the
+// `notify()` onto the real substrate @onderling/notify-envelope (push delivery to pods, with the
 // pending-upload queue for offline participants). Both expose `notify(participant, msg)`, which
 // is all the release path depends on.
 
@@ -64,7 +64,7 @@ export function openNotification(entry, encPrivateKey) {
 }
 
 /**
- * Substrate-backed notifier: maps `notify()` onto @canopy/notify-envelope's `publish()` (full
+ * Substrate-backed notifier: maps `notify()` onto @onderling/notify-envelope's `publish()` (full
  * payload, store-and-forward to the participant's pod). Inject the object returned by
  * `createNotifyEnvelope(...)` (or a compatible stub). Same sealing as the in-memory notifier.
  * @param {{ notifyEnvelope:{ publish:Function, subscribe?:Function }, roster?:object }} a

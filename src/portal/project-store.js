@@ -10,7 +10,7 @@
 
 import crypto from 'node:crypto';
 import { InMemoryCohortRegistry } from '../activation/cohort.js';
-import { charterHash } from '@canopy/attribute-charter';
+import { charterHash } from '@onderling/attribute-charter';
 import { validateProjectConfig } from '../config/project-config.js';
 import { IdentityRoster, makeContributionVerifier } from '../pod/signing.js';
 import { InMemoryRoundControl, openVerificationRound } from '../verify/round-control.js';

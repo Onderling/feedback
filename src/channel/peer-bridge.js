@@ -1,11 +1,11 @@
 // PeerBridge — the EXTERNAL MessagingBridge (M5). The feedback bot runs as its own agent
-// (its own WebID) and talks to participants over @canopy/secure-agent's peer transport
+// (its own WebID) and talks to participants over @onderling/secure-agent's peer transport
 // (sa.peer). Mirror of InternalBusBridge, but across a network peer link instead of the
 // in-process bus. The external bot is typically UNSIGNED (no participant key on the server),
 // so a verify-enabled project refuses its writes gracefully (handled in the dispatcher).
 //
-// Implements @canopy/chat-agent's MessagingBridge. The `peer` is INJECTED (sendTo + the host
-// wiring its onPeerMessage to ours), so this module imports no @canopy/* and the transport
+// Implements @onderling/chat-agent's MessagingBridge. The `peer` is INJECTED (sendTo + the host
+// wiring its onPeerMessage to ours), so this module imports no @onderling/* and the transport
 // (NKN, etc.) is never named here — `transportMode` lives with the secure-agent, not the bridge.
 //
 // Wire shape (a thin subtype on the peer payload, routed like canopy-chat's peerRouter).

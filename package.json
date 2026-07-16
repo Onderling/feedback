@@ -37,11 +37,11 @@
     "verify-summary-css": "node scripts/verify-summary-css.js"
   },
   "dependencies": {
-    "@canopy/attribute-charter": "file:../canopy-mono/packages/attribute-charter",
-    "@canopy/core": "file:../canopy-mono/packages/core",
-    "@canopy/pod-client": "file:../canopy-mono/packages/pod-client",
-    "@canopy/pseudo-pod": "file:../canopy-mono/packages/pseudo-pod",
-    "@canopy/redaction": "file:../canopy-mono/packages/redaction",
+    "@onderling/attribute-charter": "file:../canopy-mono/packages/attribute-charter",
+    "@onderling/core": "file:../canopy-mono/packages/core",
+    "@onderling/pod-client": "file:../canopy-mono/packages/pod-client",
+    "@onderling/pseudo-pod": "file:../canopy-mono/packages/pseudo-pod",
+    "@onderling/redaction": "file:../canopy-mono/packages/redaction",
     "@inrupt/solid-client-authn-core": "^4.0.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "eld": "^2.0.3",

@@ -29,7 +29,7 @@ canopy-chat-side injection (`feedbackSurface.js` → `setLlmRoute`) moves out (`
 
 - **Bridge contract** (what `CanopyChatBot` consumes): `{ onMessage(handler), sendReply({chatId,
   text, buttons}), start(), stop() }`. The handler receives `{bridgeId, chatId, messageId, text,
-  isAddressed, sender:{bridgeUid, displayName}}`. Satisfied today by `@canopy/chat-agent`'s
+  isAddressed, sender:{bridgeUid, displayName}}`. Satisfied today by `@onderling/chat-agent`'s
   `InMemoryBridge` and `TelegramBridge` (`packages/chat-agent/src/bridges/`).
 - **The bot multiplexer already exists**: `src/channel/canopy-chat-bot.js` — `new CanopyChatBot({
   bridge, pod, config, participantFor, identityFor })`. `identityFor(chatId)` returns the
@@ -168,7 +168,7 @@ the aggregate is trusted.
 - **Group-chat bot participation** ⬜ — threads are event-filters, not rosters; "agent-as-participant"
   is undesigned (canopy v2 board 4B). Feedback is 1:1 → DM-first; revisit on demand.
 - **Confidential transport Option A** (on-phone proxy) 🅿️ — research after B is running.
-- **Graduating `ollama.js` → `@canopy/llm-client`** 🅿️ — the route layer already does privatemode +
+- **Graduating `ollama.js` → `@onderling/llm-client`** 🅿️ — the route layer already does privatemode +
   throttle + retries; later cleanup (`[[llm-pluggability-deferred]]`).
 
 ## Suggested sequencing

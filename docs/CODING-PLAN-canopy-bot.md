@@ -20,7 +20,7 @@ feedback-pipeline's entire participant journey exists and is tested. **Do not re
 | Tests + smokes | `test/{canopy-chat,dispatcher-signing,channel,telegram-channel}.test.js`, `scripts/{canopy-chat-smoke,tg-bot-smoke}.js` |
 
 `CanopyChatBot` is production-ready **given a real bridge** and an `identityFor`. `scripts/canopy-chat-smoke.js`
-already drives the full journey (message → review → consent → **signed** pod write) over `@canopy/chat-agent`'s
+already drives the full journey (message → review → consent → **signed** pod write) over `@onderling/chat-agent`'s
 `InMemoryBridge`. **The one missing seam is a real bridge.** Everything below builds out from that.
 
 ## Hard invariant — participant-pod-first (BYO)
@@ -39,31 +39,31 @@ done; the write side is the new piece, in M1.)
 
 ## Layering / rule of two (constraints on this plan)
 
-- The two new bridges **implement `@canopy/chat-agent`'s `MessagingBridge` contract** (`onMessage`/`sendReply`/
+- The two new bridges **implement `@onderling/chat-agent`'s `MessagingBridge` contract** (`onMessage`/`sendReply`/
   `start`/`stop`) — reuse it, do not redefine (`architectural-layering.md:95`).
 - They **live in `apps/feedback-pipeline/src/channel/`**, not a substrate. One consumer = no extraction; lift to
-  `@canopy/*` only when a second app needs an InternalBus/peer chat bridge (`policies.md:8`).
+  `@onderling/*` only when a second app needs an InternalBus/peer chat bridge (`policies.md:8`).
 - **No InMemory-only fakes as product** — the new bridges are the production partners; `InMemoryBridge` stays the
   test double.
-- Keep `@canopy/*` imports **confined to the bridge + bot-entry modules** so the core pipeline stays portable/
-  standalone (`[[node-portability-convention]]`); these are feedback-pipeline's first runtime `@canopy/*` deps
-  (`@canopy/chat-agent`, `@canopy/core`, `@canopy/secure-agent`) — list them in the README with a one-line reason.
+- Keep `@onderling/*` imports **confined to the bridge + bot-entry modules** so the core pipeline stays portable/
+  standalone (`[[node-portability-convention]]`); these are feedback-pipeline's first runtime `@onderling/*` deps
+  (`@onderling/chat-agent`, `@onderling/core`, `@onderling/secure-agent`) — list them in the README with a one-line reason.
 
 ## Reuse vs build (the inventory, condensed)
 
 | Need | Reuse (file:line) | Build |
 |---|---|---|
-| Bridge contract + types | `@canopy/chat-agent` `MessagingBridge`/`types.js` (IncomingMessage, SendReplyArgs) | — |
-| InternalBus + co-host topology | `@canopy/core` `InternalBus`/`Agent`/`InternalTransport`; pattern in `apps/canopy-chat/src/core/agent/realAgent.js:74–153` (shared `bus`, `invoke`, `hello`) | `InternalBusBridge` (agent↔bridge adapter — none exists) |
+| Bridge contract + types | `@onderling/chat-agent` `MessagingBridge`/`types.js` (IncomingMessage, SendReplyArgs) | — |
+| InternalBus + co-host topology | `@onderling/core` `InternalBus`/`Agent`/`InternalTransport`; pattern in `apps/canopy-chat/src/core/agent/realAgent.js:74–153` (shared `bus`, `invoke`, `hello`) | `InternalBusBridge` (agent↔bridge adapter — none exists) |
 | Peer transport | `secure-agent` `sa.peer.sendTo`/`connect({onPeerMessage})` (`createSecureAgent.js:1009–1037`); inbound router `apps/canopy-chat/src/core/handlers/peerRouter.js:42` | `PeerBridge` (sa.peer↔bridge adapter) |
 | Bot entry skeleton | household `apps/household/scripts/tg-freetext.js` (bridge→bot→start, SIGINT drain `:260–277`) | `scripts/canopy-bot.js` (local + external modes) |
-| Bot identity / vault namespacing | household `apps/household/src/identity/BotIdentity.js:34–161`; `@canopy/core` `AgentIdentity`; feedback `src/pod/signing.js:26` `generateParticipantIdentity` | thin wiring |
+| Bot identity / vault namespacing | household `apps/household/src/identity/BotIdentity.js:34–161`; `@onderling/core` `AgentIdentity`; feedback `src/pod/signing.js:26` `generateParticipantIdentity` | thin wiring |
 | Bot audit pod (optional) | household `apps/household/src/pods/BotPod.js:76–321`, `FsMockPod` (`tg-pod-smoke.js:89–183`) | — |
 | Participant signing identity | `AgentIdentity.restore(vault)` + canopy-chat vault (`realAgent.js:53`) | `identityFor` that reads the participant's vault key (app-side) |
 | DM/contact UX (web) | `ensureDmThread` (`web/main.js:1149`), `chatMessage` handler (`handlers/chatMessage.js:39`), `startDm` button (`mockManifests.js:663`), QR (`domAdapter.js:464`), button render (`domAdapter.js:204,295`) | synthetic bot contact entry; project-invite URI/QR auto-activation; pass `buttons` through feedback emit |
 | Feedback surface (web) | `apps/canopy-chat/src/feedback/feedbackSurface.js`, `feedbackPod.js`; `/feedback <code>` (`web/main.js:2117`) | remove its `setLlmRoute` (route ownership → bot); supply bus+identity |
 | LLM route | feedback `src/ollama.js` (`applyLlmRoute`/`chat`) | Phase-0 guardrail + bot owns route |
-| Mobile shell | `apps/canopy-chat-mobile/src/core/agentBundle.js:90` (same InternalBus), `@canopy/react-native` `VaultAsyncStorage`/`KeychainVault`, `@canopy/oidc-session-rn` | mobile feedback screen; NKN-RN only for the *external* bot (#223) |
+| Mobile shell | `apps/canopy-chat-mobile/src/core/agentBundle.js:90` (same InternalBus), `@onderling/react-native` `VaultAsyncStorage`/`KeychainVault`, `@onderling/oidc-session-rn` | mobile feedback screen; NKN-RN only for the *external* bot (#223) |
 
 ## Milestones (web first)
 
@@ -85,7 +85,7 @@ done; the write side is the new piece, in M1.)
 4. canopy-chat web mount — in `realAgent.js`, co-host the bot agent on the existing `bus`; `feedbackSurface.js`
    supplies bus + identity (not the route).
 5. **Participant-pod-first write (BYO invariant).** Inject a participant-pod-backed writer as the dispatcher's
-   `pod`: park `{raw, cleaned, meta}` on the participant's own pod (reuse `@canopy/pod-client` + the
+   `pod`: park `{raw, cleaned, meta}` on the participant's own pod (reuse `@onderling/pod-client` + the
    `PLAN-tomorrow-tg-pod.md` `/messages/{raw,cleaned,meta}` layout + household `BotPod`/`FsMockPod` pattern;
    `feedbackPod.js` already builds the CSS-backed participant pod). Aggregation runs via the existing
    `ByoCentralPod` reading that pod as a source — the central never receives raw. Pod flavor (common vs
@@ -266,9 +266,9 @@ kept here so nothing hides — per-client breadth and downstream/governance, not
 
 **Still parked / deferred (bot & infra):**
 - **Confidential transport Option A** (on-phone proxy, 🅿️) — research after M7.
-- **`ollama.js` → `@canopy/llm-client` graduation** (🅿️).
+- **`ollama.js` → `@onderling/llm-client` graduation** (🅿️).
 - **Group-chat bot participation** (⬜) — board 4B undesigned; revisit on demand.
-- `InMemoryBridge` is not a public `@canopy/chat-agent` export (test wiring imports it directly — fold into M1).
+- `InMemoryBridge` is not a public `@onderling/chat-agent` export (test wiring imports it directly — fold into M1).
 
 **Breadth of the menukaart (item 3 — per-client, all ⬜ in `MENUKAART.md`):** voice intake (STT), other channels
 (WhatsApp/Signal/phone/web-chat), bot-posture/tone/memory presets, cooling-off period, retroactive withdraw,

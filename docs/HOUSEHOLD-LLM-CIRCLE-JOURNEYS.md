@@ -37,7 +37,7 @@ their own BYO pod because they're mutually private — a household is not.)
 
 ### Journey B — Privatemode via proxy, Telegram (the De Vries, low-friction + cloud model)
 1. They already live in **Telegram**. The organizer adds the **canopy bot to a Telegram group**
-   (the proven `@canopy/chat-agent` TelegramBridge household path).
+   (the proven `@onderling/chat-agent` TelegramBridge household path).
 2. Household pod is **managed-hosted by us**. In setup the organizer sets **`llmTool: cloud`** and
    **configures the proxy route**: the bot encrypts each message to the **proxy server** (our
    open-source confidential proxy) → which talks to **Privatemode** (or another model).
@@ -62,7 +62,7 @@ prefers a keyboard.
 - Transports: **mDNS** (`MdnsTransport`), NKN/relay, the **Telegram bridge**.
 - The LLM **route layer** (`feedback-pipeline/src/ollama.js`: local / privatemode / base-url) + the
   **confidential transport** (`CONFIDENTIAL-LLM-TRANSPORT.md`, `tee/attestation.js`).
-- Household **Solid pod** (CSS) + `@canopy/pod-client`.
+- Household **Solid pod** (CSS) + `@onderling/pod-client`.
 
 **New work:**
 1. **Household pod ↔ circle binding** — a circle whose shared store is a household pod (members
@@ -163,7 +163,7 @@ Per the **`STORAGE-SECURITY-MENUKAART.md`** (posture is a per-deployment policy,
 household's recommended posture is **P2 — client-side E2E**: the **household
 trusts no server**, content is sealed, **search is local**. Concretely (mechanics in
 `POD-ENCRYPTION-MODEL.md`):
-- **Sealing is OPT-IN** via the `@canopy/pod-client` `sealing/` substrate — chosen for the household,
+- **Sealing is OPT-IN** via the `@onderling/pod-client` `sealing/` substrate — chosen for the household,
   not imposed globally. (Other circles may pick P0/P1/P3.)
 - **Per-resource envelope** (live app → fetch one message/task, per-resource ACL, partial sync) — NOT
   whole-blob. Structure stays cleartext (opaque pseudonyms); a **sealed index** decodes pseudonyms +

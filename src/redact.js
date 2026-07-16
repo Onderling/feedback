@@ -10,12 +10,12 @@
 // This split is the architectural guarantee the product leans on
 // ("drempel ingebouwd" / "het kan architectonisch niet anders").
 //
-// As of P0 the redaction ENGINE lives in @canopy/redaction (generic,
+// As of P0 the redaction ENGINE lives in @onderling/redaction (generic,
 // config-driven). This module is now a THIN ADAPTER: it owns only the NL ruleset
 // as DATA (./nl-redact-config.js) and calls the engine bound to it. Public
 // behaviour is identical to the pre-extraction version.
 
-import { redact as engineRedact } from '@canopy/redaction';
+import { redact as engineRedact } from '@onderling/redaction';
 import { NL_STRUCTURED_CONFIG, PLACEHOLDER } from './nl-redact-config.js';
 
 export { PLACEHOLDER };

@@ -205,7 +205,7 @@ routes.
 **D3 — degree of intervention:** clean-only / also help phrase. 🔶 (`prompts.js`; human stays
 final editor — non-negotiable.)
 
-> Note: don't rush to swap `ollama.js` for `@canopy/llm-client`. The app's own route layer
+> Note: don't rush to swap `ollama.js` for `@onderling/llm-client`. The app's own route layer
 > already does privatemode + rate-limiting + retries; graduating to the shared client is later
 > cleanup, not a prerequisite. *(`[[llm-pluggability-deferred]]`)*
 

@@ -16,9 +16,9 @@ scope tomorrow but the storage layout must not preclude it.
 
 ## Reuse map (verified against the repo)
 
-### 1. Telegram ingestion — `@canopy/chat-agent`
+### 1. Telegram ingestion — `@onderling/chat-agent`
 ```js
-import { TelegramBridge } from '@canopy/chat-agent/bridges/telegram';
+import { TelegramBridge } from '@onderling/chat-agent/bridges/telegram';
 
 const bridge = new TelegramBridge({ botToken: process.env.FP_TG_BOT_TOKEN, mode: 'long-polling' });
 bridge.onMessage(async (msg) => {            // msg: { chatId, messageId, text, sender, ... }
@@ -32,9 +32,9 @@ await bridge.start();
   `tg-pod-smoke.js`, `tg-freetext.js`.
 - Addressed-only filter (DMs / `@bot` / reply-to-bot) is built into the bridge.
 
-### 2. Pod storage (raw + cleaned) — `@canopy/pod-client`
+### 2. Pod storage (raw + cleaned) — `@onderling/pod-client`
 ```js
-import { PodClient } from '@canopy/pod-client';
+import { PodClient } from '@onderling/pod-client';
 const pod = new PodClient({ podRoot, auth });
 
 const ts = stampFromMessage(msg);            // pass time in; avoid Date.now() in pure code
@@ -58,12 +58,12 @@ import { cleanMessage } from '../src/pipeline.js';
 const { raw, redacted, hits, cleaned } = await cleanMessage('qwen2.5:7b-instruct', msg.text);
 ```
 Tomorrow's only LLM change: optionally swap `src/ollama.js` for
-`@canopy/llm-client` (`LlmClient.invoke({ system, messages })` — no `tools` →
+`@onderling/llm-client` (`LlmClient.invoke({ system, messages })` — no `tools` →
 `result.replyText`) so the app shares the substrate's audit hook + provider
 gating. Keep the local client as the zero-dependency fallback.
 
 ### 4. Identity / pod provisioning — `apps/household/src/identity/`
-- `BotIdentity` (wraps `@canopy/core` `AgentIdentity`; vault-namespaced keypair).
+- `BotIdentity` (wraps `@onderling/core` `AgentIdentity`; vault-namespaced keypair).
 - `mintAdminCap()` / `PodCapabilityToken` for the bot→user pod capability.
 - **Start in-memory/mock**; a real Solid pod + OIDC/capability auth is V2
   (household README flags production pod writes as future). Don't block tomorrow

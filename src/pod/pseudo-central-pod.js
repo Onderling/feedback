@@ -1,8 +1,8 @@
-// PseudoPodCentralPod — the central pod (Phase 2) backed by the REAL @canopy/pseudo-pod
+// PseudoPodCentralPod — the central pod (Phase 2) backed by the REAL @onderling/pseudo-pod
 // substrate (a Solid-shaped store), proving our interface runs on the actual substrate
 // rather than only the in-memory stub.
 //
-// In production the import is the workspace dep `@canopy/pseudo-pod` and, for a real
+// In production the import is the workspace dep `@onderling/pseudo-pod` and, for a real
 // deployment, the backend is a CSS-backed pod-client (CSS speaks Solid too). Here we use
 // a relative path + a memory backend so it runs in-repo with no live CSS. (The repo
 // treats CSS as bring-your-own: a running server at CSS_URL with an ACP config — see the
@@ -11,7 +11,7 @@
 // Methods are ASYNC (a real pod is async), unlike the synchronous InMemoryCentralPod.
 // The same callers work: `aggregateForProject(await pod.forAggregation(), cfg, {skipClean:true})`.
 
-import { createPseudoPod, createMemoryBackend } from '@canopy/pseudo-pod';
+import { createPseudoPod, createMemoryBackend } from '@onderling/pseudo-pod';
 import { validateContribution } from './contribution.js';
 import { canWithdraw } from './central-pod.js';
 

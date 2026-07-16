@@ -3,7 +3,7 @@
 // The feedback TEXT still aggregates in full; only the *segmentation* is hidden for rare combos.
 //   node --test
 //
-// Reuses @canopy/attribute-charter (suppressRareAttributes / attributeKDefault) — not reimplemented here.
+// Reuses @onderling/attribute-charter (suppressRareAttributes / attributeKDefault) — not reimplemented here.
 
 import { test, afterEach } from 'node:test';
 import assert from 'node:assert/strict';

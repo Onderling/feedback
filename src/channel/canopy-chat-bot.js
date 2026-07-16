@@ -5,7 +5,7 @@
 // can offer buttons too. Everything past routing is the shared dispatcher + actions.
 //
 // Decoupled from the substrate via the minimal onMessage/sendReply bridge contract — the
-// @canopy/chat-agent InMemoryBridge satisfies it (wired live in scripts/canopy-chat-smoke.js).
+// @onderling/chat-agent InMemoryBridge satisfies it (wired live in scripts/canopy-chat-smoke.js).
 
 import { ChannelDispatcher } from './dispatcher.js';
 import { CanopyChatChannelAdapter } from './canopy-chat-adapter.js';

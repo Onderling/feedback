@@ -1,8 +1,8 @@
 // Activation orchestration (build proposal §1.2 / architecture §1.2). The activation
 // service: validates a cohort code → has the SUBSTRATE provision the participant's pod
-// (the injected `provisionPod` — in production this calls @canopy/pod-onboarding
+// (the injected `provisionPod` — in production this calls @onderling/pod-onboarding
 // createPodOnboarding + ACP templates + creates the central-pod container; keys come
-// from @canopy/vault, generated client-side) → injects the project CONFIG at runtime
+// from @onderling/vault, generated client-side) → injects the project CONFIG at runtime
 // (one image for everyone, never per-participant) → redeems the code and stores only
 // the recovery-hash ↔ pod-ref record. It never stores names, email, or identity.
 //

@@ -4,7 +4,7 @@
 //   • server-side (Telegram bot service, activation service): Solid-OIDC client credentials
 //     → a DPoP fetch (clientCredentialsFetch).
 //   • browser (canopy-chat): the host already holds a @inrupt/solid-client-authn-browser
-//     fetch (keys from @canopy/vault) — pass it straight to makeCssCentralPod as authedFetch.
+//     fetch (keys from @onderling/vault) — pass it straight to makeCssCentralPod as authedFetch.
 //
 // The Node auth lib is dynamically imported so the app stays dependency-free; inject `authn`
 // to decouple in tests.

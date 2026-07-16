@@ -1,5 +1,5 @@
 // Telegram channel adapter + multiplexer bot — proves the real "post-receipt" surface
-// drives the same dispatcher journey as canopy-chat, against a FAKE bridge (no @canopy
+// drives the same dispatcher journey as canopy-chat, against a FAKE bridge (no @onderling
 // dependency) + the mock LLM. The real TelegramBridge satisfies the same minimal
 // onMessage/sendReply interface (exercised live by scripts/tg-bot-smoke.js).
 
