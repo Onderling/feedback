@@ -1,0 +1,7 @@
+node_modules
+results-*.md
+portal-store.json
+*.log
+
+# interim: file:-dep lock is machine-local; regenerate + commit at the publish swap
+package-lock.json

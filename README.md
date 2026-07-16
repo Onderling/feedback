@@ -1,22 +1,24 @@
-# @canopy-app/feedback-pipeline
+# onderling-feedback
 
-> **Direction (decided 2026-06-11):** this app will **dissolve into canopy-chat**. Its manifest/ops
-> stay (the source of truth all projectors read), but the `feedback` name becomes a **navigation label**
-> for this functionality inside the unified chat surface — not a separate app/build/shell. (The
-> server-side pipeline/portal stay deployable; it's the user-facing surface that unifies.) See the root
-> README's *Direction* note.
+A privacy-respecting **feedback pipeline** — local-LLM clean / anonymize / dedup-summarize with a
+user-driven verify-summary loop, running on the user's own Solid pod. Part of the **Onderling** product
+line (OR / zorg / whistleblower "feedback-infrastructuur").
 
-> **Layer: app (experiment / pre-DD).** A local-LLM pipeline that cleans,
-> anonymizes and dedup-summarizes chat messages. Self-contained today (talks to
-> Ollama over HTTP, no `@canopy/*` dependency) so the experiment runs with zero
-> install. The path to composing the real substrates (Telegram, pod, llm-client)
-> is in [`docs/PLAN-tomorrow-tg-pod.md`](./docs/PLAN-tomorrow-tg-pod.md).
+Formerly `apps/feedback-pipeline` in the `canopy-mono` monorepo; **split out into its own repo** — the first
+"third-party via SDK" tenant of the canopy platform.
 
-Implements **step 3 ("Lokale filtering")** and the start of **step 5
-("Aggregatie")** of the six-step feedback pipeline in
-`Project Files/Aanpak/commerciele_verkenning.md`
-— the OR / zorg / whistleblower "feedback-infrastructuur" product line
-(public-facing as *Onderling*).
+## Standalone repo
+
+- **Consumes the canopy platform via `@canopy/*` packages.** *Interim:* local `file:` deps pointing at a
+  sibling `canopy-mono` checkout (`../canopy-mono/packages/*`). These swap to published `@canopy/…@^x` once
+  the SDK is published — a `package.json`-only change, no source edits (imports are already bare `@canopy/*`).
+- **Deps:** `@canopy/core`, `@canopy/pod-client`, `@canopy/pseudo-pod`, `@canopy/redaction` (+ non-canopy:
+  `@inrupt/solid-client-authn-core`, `@modelcontextprotocol/sdk`, `eld`, `zod`).
+- **Install + test:** `npm install` → `npm test` (node:test — 288 passing).
+- **Provenance:** carved from `canopy-mono` via `git filter-repo`. The split plan lives in the monorepo's
+  `plans/PLAN-feedback-split.md`; **finishing the split (push + finalize) → [`FINISH-SPLIT.md`](./FINISH-SPLIT.md).**
+
+---
 
 ## The pipeline
 

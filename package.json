@@ -1,7 +1,7 @@
 {
-  "name": "@canopy-app/feedback-pipeline",
-  "version": "0.0.1",
-  "description": "Local-LLM message clean/anonymize + dedup-summarize pipeline (feedback-infrastructuur step 3+5). Experiment / pre-DD.",
+  "name": "onderling-feedback",
+  "version": "0.1.0",
+  "description": "Onderling feedback — privacy-first community feedback: local LLM clean/anonymize, pseudonymous signed contributions, verifiable summaries. Consumes the platform SDK.",
   "type": "module",
   "private": true,
   "exports": {
@@ -36,11 +36,11 @@
     "verify-summary-css": "node scripts/verify-summary-css.js"
   },
   "dependencies": {
-    "@canopy/attribute-charter": "workspace:*",
-    "@canopy/core": "workspace:*",
-    "@canopy/pod-client": "workspace:*",
-    "@canopy/pseudo-pod": "workspace:*",
-    "@canopy/redaction": "workspace:*",
+    "@canopy/attribute-charter": "file:../canopy-mono/packages/attribute-charter",
+    "@canopy/core": "file:../canopy-mono/packages/core",
+    "@canopy/pod-client": "file:../canopy-mono/packages/pod-client",
+    "@canopy/pseudo-pod": "file:../canopy-mono/packages/pseudo-pod",
+    "@canopy/redaction": "file:../canopy-mono/packages/redaction",
     "@inrupt/solid-client-authn-core": "^4.0.0",
     "@modelcontextprotocol/sdk": "^1.29.0",
     "eld": "^2.0.3",
