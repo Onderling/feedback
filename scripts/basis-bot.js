@@ -59,7 +59,7 @@ const isMain = import.meta.url === `file://${process.argv[1]}`;
 if (isMain) {
   const log = (...a) => console.log(...a);
   const [{ InternalBus }, { InMemoryCentralPod }, { validateProjectConfig }, signing] = await Promise.all([
-    import('../../../packages/core/src/transport/InternalTransport.js'),
+    import('@onderling/core').then((m) => ({ InternalBus: m.InternalBus })),
     import('../src/pod/central-pod.js'),
     import('../src/config/project-config.js'),
     import('../src/pod/signing.js'),

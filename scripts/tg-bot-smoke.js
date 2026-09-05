@@ -21,7 +21,7 @@ if (!token) { console.log('SKIP: set FP_TG_BOT_TOKEN (a Telegram bot token)'); p
 if (!process.env.FP_LLM_BASEURL) console.log('NOTE: FP_LLM_BASEURL not set — review/clean will hit the default local route.');
 
 let TelegramBridge;
-try { ({ TelegramBridge } = await import('../../../packages/chat-agent/src/bridges/TelegramBridge.js')); }
+try { ({ TelegramBridge } = await import('@onderling/chat-agent/bridges/telegram')); }
 catch (e) { console.log('SKIP: chat-agent substrate not available —', e.message); process.exit(0); }
 
 // Privacy is config-driven: set FP_PROJECT_PUBKEY to have the bot SEAL every contribution to

@@ -37,13 +37,16 @@
     "verify-summary-css": "node scripts/verify-summary-css.js"
   },
   "dependencies": {
+    "@inrupt/solid-client-authn-core": "^4.0.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "@onderling/attribute-charter": "file:../canopy-mono/packages/attribute-charter",
+    "@onderling/chat-agent": "file:../canopy-mono/packages/chat-agent",
     "@onderling/core": "file:../canopy-mono/packages/core",
     "@onderling/pod-client": "file:../canopy-mono/packages/pod-client",
     "@onderling/pseudo-pod": "file:../canopy-mono/packages/pseudo-pod",
     "@onderling/redaction": "file:../canopy-mono/packages/redaction",
-    "@inrupt/solid-client-authn-core": "^4.0.0",
-    "@modelcontextprotocol/sdk": "^1.29.0",
+    "@onderling/secure-agent": "file:../canopy-mono/packages/secure-agent",
+    "@onderling/transports": "file:../canopy-mono/packages/transports",
     "eld": "^2.0.3",
     "zod": "^4.4.3"
   },
