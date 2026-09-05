@@ -89,9 +89,15 @@ test('runProjectAggregation: gates placement, installs the route, returns locati
   assert.equal(out.route, 'privatemode');
 });
 
-test('applyLlmRoute: privatemode → local proxy; ovh without a baseURL is rejected', (t) => {
+test('applyLlmRoute: privatemode → the SDK when no proxy is configured, the proxy when one is; ovh without a baseURL is rejected', (t) => {
   withEnv(t);
   delete process.env.FP_LLM_BASEURL;
+  delete process.env.PRIVATEMODE_PROXY_URL;
+  // No proxy URL anywhere → the SDK route (attests + encrypts on this machine; lazy, nothing loads here).
+  const sdk = applyLlmRoute({ route: 'privatemode', model: 'm' });
+  assert.equal(sdk.baseURL, 'sdk');
+  // A configured proxy keeps the loopback-proxy route.
+  process.env.PRIVATEMODE_PROXY_URL = 'http://localhost:8080/v1';
   const pm = applyLlmRoute({ route: 'privatemode', model: 'm' });
   assert.equal(pm.baseURL, 'http://localhost:8080/v1');
   assert.throws(() => applyLlmRoute({ route: 'ovh', model: 'm' }), /needs llm\.baseURL/);

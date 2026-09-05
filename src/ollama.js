@@ -19,6 +19,25 @@
 let routeOverride = null;
 export function setLlmRoute(route) {
   routeOverride = route?.baseURL ? { base: route.baseURL.replace(/\/+$/, ''), apiKey: route.apiKey || '' } : null;
+  if (route?.fetch) routeOverride = { ...(routeOverride ?? { base: 'https://api.privatemode.ai/v1', apiKey: '' }), fetch: route.fetch };
+}
+// The SDK route: Privatemode's own JS SDK attests the enclave and encrypts end-to-end on this
+// machine, so no proxy is needed and no plaintext reaches an unattested host. Chosen when the
+// route is 'privatemode' and no proxy URL is configured; the key comes from PRIVATEMODE_API_KEY
+// or the key file (see @onderling/llm-client/providers/privatemode). Lazy: the SDK loads once.
+let sdkFetchPromise = null;
+function privatemodeSdkFetch(model) {
+  sdkFetchPromise ??= (async () => {
+    const { privatemodeFetch, readPrivatemodeKey } = await import('@onderling/llm-client/providers/privatemode');
+    const { PrivatemodeAI } = await import('privatemode-ai');
+    const apiKey = readPrivatemodeKey();
+    if (!apiKey) throw new Error('llm.route "privatemode" without a proxy needs PRIVATEMODE_API_KEY or ~/.privatemode-apikey');
+    return privatemodeFetch(new PrivatemodeAI({ apiKey }), { extraBody: /gpt-oss/.test(model || '') ? { reasoning_effort: 'low' } : null });
+  })();
+  return sdkFetchPromise;
+}
+function sdkRouteWanted(llm = {}) {
+  return llm.route === 'privatemode' && !llm.baseURL && !env('PRIVATEMODE_PROXY_URL');
 }
 
 // process.env only exists under Node — guard it so this module is browser-safe.
@@ -58,6 +77,11 @@ function attestationConfigured(llm = {}) {
 }
 
 export function applyLlmRoute(llm = {}) {
+  if (sdkRouteWanted(llm)) {
+    // Attested by construction: the SDK verifies the deployment before the first request.
+    setLlmRoute({ fetch: (...a) => privatemodeSdkFetch(llm.model).then((f) => f(...a)) });
+    return { route: 'privatemode', baseURL: 'sdk' };
+  }
   const base = llm.baseURL || (ROUTE_DEFAULT_BASE[llm.route]?.() ?? undefined);
   if (['ovh', 'within-walls'].includes(llm.route) && !base) {
     throw new Error(`llm.route "${llm.route}" needs llm.baseURL (or FP_LLM_BASEURL)`);
@@ -80,6 +104,7 @@ export function applyLlmRoute(llm = {}) {
 export function assertCleanRouteSafe(llm = {}) {
   if (llm.route === 'local') return;
   if (llm.route === 'privatemode') {
+    if (sdkRouteWanted(llm)) return;   // the SDK attests + encrypts on this machine
     const base = llm.baseURL || ROUTE_DEFAULT_BASE.privatemode();
     if (isLoopbackBase(base) || attestationConfigured(llm)) return;
     throw new Error(`clean route "privatemode" is not safe for raw input: ${base} is non-loopback and unattested`);
@@ -170,7 +195,8 @@ async function postOnce({ base, apiKey, model, system, examples, user, temperatu
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    return await fetch(`${base}/chat/completions`, {
+    const doFetch = routeOverride?.fetch ?? fetch;
+    return await doFetch(`${base}/chat/completions`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', ...(apiKey ? { Authorization: `Bearer ${apiKey}` } : {}) },
       signal: ctrl.signal,
