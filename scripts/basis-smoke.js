@@ -20,7 +20,7 @@ import { cryptoForProject } from '../src/pod/crypto-config.js';
 if (!process.env.FP_LLM_BASEURL) console.log('NOTE: FP_LLM_BASEURL not set — review/clean hits the default local route; use clear phrases.');
 
 let InMemoryBridge;
-try { ({ InMemoryBridge } = await import('../../../packages/chat-agent/src/bridges/InMemoryBridge.js')); }
+try { ({ InMemoryBridge } = await import('@onderling/chat-agent')); }
 catch (e) { console.log('SKIP: chat-agent substrate not available —', e.message); process.exit(0); }
 
 // basis runs ON the participant's device, so it both SEALS (to the project key) and
