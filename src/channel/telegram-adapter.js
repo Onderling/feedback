@@ -10,6 +10,7 @@
 
 import { floorMessage } from '../floors/index.js';
 import { getStrings } from '../strings/index.js';
+import { walkLog } from '../walk-log.js';
 import { renderMessage } from './render.js';
 
 export { renderMessage };   // re-exported for back-compat (callers/tests import it here)
@@ -34,6 +35,7 @@ export class TelegramChannelAdapter {
 
   async send(msg) {
     const { text, buttons } = renderMessage(msg, this.#strings);
+    walkLog({ kind: 'reply', channel: 'telegram', type: msg?.type, text: String(text ?? '').slice(0, 200), buttons: (buttons || []).map((b) => b.id ?? b.callbackData ?? b.label) });
     if (!text && !buttons) return;
     await this.#bridge.sendReply({ chatId: this.#chatId, replyTo: this.#replyTo, text, buttons });
   }

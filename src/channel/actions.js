@@ -14,6 +14,8 @@
 /** Parse the explicit control grammar (slash commands + fp: button callbacks). Returns an
  *  action, or null when the text is not a control utterance (a channel decides what null
  *  means: Telegram → a feedback message; basis → run the NL classifier). */
+import { walkLog, shortChat } from '../walk-log.js';
+
 export function parseControl(text) {
   const t = (text || '').trim();
   if (t === '/start' || t === '/menu' || t === 'fp:menu') return { kind: 'menu' };
@@ -59,6 +61,7 @@ function consentIds(action, points) {
  * @param {{ session:{dispatcher, points:Array, adapter}, say:(text:string,buttons?:Array)=>Promise<void>, strings:object }} ctx
  */
 export async function runAction(action, { session, say, strings: s }) {
+  walkLog({ kind: 'turn', chat: shortChat(session?.chatId), action: action?.kind, ...(action?.kind === 'message' ? { chars: String(action.text ?? '').length } : {}) });
   switch (action.kind) {
     case 'menu':
       return say(s.menuWelcome, [{ id: 'fp:review', label: s.menuReview }, { id: 'fp:mine', label: s.menuMine }]);

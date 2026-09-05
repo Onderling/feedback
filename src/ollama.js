@@ -16,6 +16,7 @@
 
 // A host without env (the browser / basis) injects the route here. Set from the
 // project config's llm block at startup; takes precedence over env when present.
+import { walkLog } from './walk-log.js';
 let routeOverride = null;
 export function setLlmRoute(route) {
   routeOverride = route?.baseURL ? { base: route.baseURL.replace(/\/+$/, ''), apiKey: route.apiKey || '' } : null;
@@ -37,7 +38,8 @@ function privatemodeSdkFetch(model) {
   return sdkFetchPromise;
 }
 function sdkRouteWanted(llm = {}) {
-  return llm.route === 'privatemode' && !llm.baseURL && !env('PRIVATEMODE_PROXY_URL');
+  // Any explicit base — config, the proxy env, or FP_LLM_BASEURL (the mock server in tests) — wins over the SDK.
+  return llm.route === 'privatemode' && !llm.baseURL && !env('PRIVATEMODE_PROXY_URL') && !env('FP_LLM_BASEURL');
 }
 
 // process.env only exists under Node — guard it so this module is browser-safe.
@@ -232,6 +234,7 @@ export async function chat(model, system, user, opts = {}) {
       }
       const json = await res.json();
       recordUsage(json.usage);
+      walkLog({ kind: 'llm', model, route: routeOverride?.fetch ? 'privatemode-sdk' : base, task: String(system).slice(0, 60), ms, ok: true, tokens: json.usage?.total_tokens ?? null });
       return { ok: true, ms, text: (json.choices?.[0]?.message?.content ?? '').trim(), usage: json.usage || null };
     } catch (e) {
       const ms = Date.now() - t0;

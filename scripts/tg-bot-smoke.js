@@ -14,6 +14,7 @@
 import { TelegramFeedbackBot } from '../src/channel/telegram-bot.js';
 import { InMemoryCentralPod } from '../src/pod/central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
+import { walkLog, walkLogOn } from '../src/walk-log.js';
 import { cryptoForProject } from '../src/pod/crypto-config.js';
 
 const token = process.env.FP_TG_BOT_TOKEN || process.env.HOUSEHOLD_TG_BOT_TOKEN;
@@ -34,6 +35,8 @@ const config = validateProjectConfig({
   ...(process.env.FP_PROJECT_PUBKEY ? { privacy: { seal: true, projectPublicKey: process.env.FP_PROJECT_PUBKEY } } : {}),
 });
 if (config.privacy.seal) console.log('sealing contributions to the project key (host-blind writer).');
+walkLog({ kind: 'run', bot: 'telegram', project: config.projectId, llm: { route: config.llm.route, model: config.llm.model } });
+if (walkLogOn()) console.log(`walk log → ${process.env.FP_WALK_LOG}`);
 const bridge = new TelegramBridge({ botToken: token, mode: 'long-polling', dropPendingUpdates: true });
 
 // Tier-3c: real CSS pod when owner credentials are present. The TG bot service runs as the

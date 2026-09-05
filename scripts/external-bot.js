@@ -21,6 +21,7 @@ import { createSecureAgent } from '@onderling/secure-agent';
 import { A2ATransport } from '@onderling/core';
 import { InMemoryCentralPod } from '../src/pod/central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
+import { walkLog, walkLogOn } from '../src/walk-log.js';
 import { startExternalCanopyBot } from './basis-bot.js';
 
 const { values } = parseArgs({ options: { 'data-dir': { type: 'string', default: './.feedback-bot' } } });
@@ -64,6 +65,8 @@ const sa = await createSecureAgent({
 });
 await sa.relay.connect({ relayUrl });
 
+walkLog({ kind: 'run', bot: 'external-contact', project: config.projectId, llm: { route: config.llm.route, model: config.llm.model } });
+if (walkLogOn()) console.log(`walk log → ${process.env.FP_WALK_LOG}`);
 const pod = new InMemoryCentralPod();
 const { bridge, stop } = await startExternalCanopyBot({ peer: sa.peer, pod, config, participantFor: (c) => c });
 bridgeRef = bridge;

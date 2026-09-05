@@ -7,6 +7,7 @@
 // Decoupled from the substrate via the same minimal bridge contract (sendReply) — the
 // @onderling/chat-agent InMemoryBridge satisfies it; a fake bridge does in tests.
 
+import { walkLog } from '../walk-log.js';
 import { floorMessage } from '../floors/index.js';
 import { getStrings } from '../strings/index.js';
 import { renderMessage } from './render.js';
@@ -31,6 +32,7 @@ export class BasisChannelAdapter {
 
   async send(msg) {
     const { text, buttons } = renderMessage(msg, this.#strings);
+    walkLog({ kind: 'reply', channel: 'basis', type: msg?.type, text: String(text ?? '').slice(0, 200), buttons: (buttons || []).map((b) => b.id ?? b.callbackData ?? b.label) });
     if (!text && !buttons) return;
     // text+buttons stay the canonical render; for the review, also pass the structured points so a rich
     // surface can offer inline per-point edit (pre-fill the editor with the current curated text).

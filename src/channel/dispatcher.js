@@ -7,6 +7,7 @@
 // basis, in the bot service for TG — so the floor + clean it performs share the
 // adapter's trust context.
 
+import { walkLog } from '../walk-log.js';
 import { assertAdapter } from './adapter.js';
 import { escalates, runTask1, lineFor } from '../task1.js';
 import { buildContribution } from '../pod/contribution.js';
@@ -73,6 +74,7 @@ export class ChannelDispatcher {
   /** An inbound message. Floors via the adapter (placement), routes, responds. */
   async handleMessage(raw, { edited = false } = {}) {
     const fm = await this.#adapter.floor(raw, { userDefault: this.#opts.userDefault });
+    walkLog({ kind: 'floor', trust: this.#adapter.floorsTrust, hits: fm?.hits?.length ?? fm?.redactions?.length ?? null, signal: fm?.signal?.category ?? null, rejected: Boolean(fm?.reject) });
     if (fm.reject) {
       await this.#adapter.send({ type: 'rejected', reason: fm.reject });
       return { stored: false, reason: fm.reject };
