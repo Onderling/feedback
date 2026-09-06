@@ -1,0 +1,56 @@
+# deploy/roles/feedback-collect.yml — the COLLECTING half of the feedback system as a box role
+# (monorepo deploy/box; the role contract is deploy/roles/<role>.{yml,health,caddy}). This half sees
+# raw text (post-receipt on Telegram) — it runs on our box or the customer's, never a partner's.
+#
+#   activation  cohort code → the participant's ACP container in the project pod   (${ACTIVATE_HOST})
+#   portal      the project lead's GUI: menukaart, invite codes, rounds             (${PORTAL_HOST})
+#   bots        one Telegram bot per project that has FP_TG_TOKEN_<ID> — `project.js run`
+#
+# All three share one image (deploy/Dockerfile.box) and one data volume: the portal store
+# (projects + cohort), the projects' secrets file, the walk logs. The pod is the box's `pod` role
+# (CSS_URL=http://pod:3000) or an external CSS.
+services:
+  feedback-activation:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.box
+    command: ["node", "scripts/activation-service.js"]
+    restart: unless-stopped
+    environment:
+      CSS_URL: "${CSS_URL:-http://pod:3000}"
+      FP_OWNER_CLIENT_ID: "${FP_OWNER_CLIENT_ID:-}"
+      FP_OWNER_CLIENT_SECRET: "${FP_OWNER_CLIENT_SECRET:-}"
+      FP_OWNER_WEBID: "${FP_OWNER_WEBID:-}"
+      FP_PROJECT_POD: "${FP_PROJECT_POD:-}"
+      FP_COHORT_STORE: "/data/portal-store.json"
+      PORT: "8787"
+    volumes:
+      - feedback-data:/data
+  feedback-portal:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.box
+    command: ["node", "scripts/portal.js"]
+    restart: unless-stopped
+    environment:
+      FP_PORTAL_STORE: "/data/portal-store.json"
+      FP_INVITE_BASE: "https://${ACTIVATE_HOST}/"
+      PORT: "8080"
+    volumes:
+      - feedback-data:/data
+  feedback-bots:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.box
+    command: ["node", "scripts/project.js", "run"]
+    restart: unless-stopped
+    environment:
+      FP_PORTAL_STORE: "/data/portal-store.json"
+      FP_PROJECT_SECRETS: "/data/projects.env"
+      FP_WALK_LOG: "/data/walks/"
+      PRIVATEMODE_API_KEY: "${PRIVATEMODE_API_KEY:-}"
+      FP_PSEUDONYM_SECRET: "${FP_PSEUDONYM_SECRET:-}"
+    volumes:
+      - feedback-data:/data
+volumes:
+  feedback-data:

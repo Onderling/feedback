@@ -1,0 +1,1 @@
+{ "$comment": "a patient-diary shape (5.2 richting 2): the asking bot and the clinical output are reserved — validation says not yet", "botMode": "ask", "output": ["tracks", "clinical"] }

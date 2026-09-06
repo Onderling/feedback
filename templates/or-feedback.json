@@ -1,0 +1,19 @@
+{
+  "$comment": "Template: the works-council (OR) feedback channel — strategie/5.1 Richting A. Fills the four levers with values that are BUILT today; a project made from it needs nothing new. Override projectId/projectName/k/hostnames per project.",
+  "projectId": "or-example",
+  "projectName": "OR-kanaal",
+  "channels": ["telegram"],
+  "participants": { "home": "hosted", "lifetime": "project" },
+  "botMode": "collect",
+  "output": ["tracks"],
+  "llm": { "route": "privatemode", "model": "kimi-k2.6" },
+  "language": { "preferred": "nl" },
+  "aggregation": { "k": 5, "belowThreshold": "quarantine" },
+  "signal": {
+    "layer1OnDevice": true,
+    "escalationCategories": ["crisis", "child-safety", "medical-emergency", "abuse", "safety", "harassment"],
+    "passiveSupport": { "crisis": "113 (zelfmoordpreventie): bel 113 of 0800-0113" }
+  },
+  "review": { "mode": "notification" },
+  "cohortHint": 50
+}

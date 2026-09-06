@@ -79,6 +79,9 @@ export class ProjectStore {
     return c.projectId;
   }
 
+  /** The validated config of a project (the box's `project.js run/aggregate` read it). */
+  projectConfig(projectId) { return this.#req(projectId).config; }
+
   /** Mint N single-use invite codes (the registry does NOT store them). */
   generateCodes(projectId, n) { this.#req(projectId); return this.#cohort.generateCodes(projectId, Number(n)); }
 

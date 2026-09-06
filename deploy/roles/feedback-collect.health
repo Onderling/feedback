@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+# feedback-collect health: the portal and the activation service answer /health; the bots container
+# is running (it long-polls Telegram; a project without a token simply is not started — that is
+# said in its log, not a failure).
+set -u
+eval "$COMPOSE exec -T feedback-portal node -e \"fetch('http://127.0.0.1:8080/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"" || exit 1
+eval "$COMPOSE exec -T feedback-activation node -e \"fetch('http://127.0.0.1:8787/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))\"" || exit 1
+eval "$COMPOSE ps --status running --services" | grep -qx feedback-bots

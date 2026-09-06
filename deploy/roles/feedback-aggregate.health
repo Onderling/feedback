@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+# feedback-aggregate health: the runner is up (it loops on its schedule; a failed run is logged and retried).
+set -u
+eval "$COMPOSE ps --status running --services" | grep -qx feedback-aggregate

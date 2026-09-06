@@ -11,20 +11,13 @@
 // The pod here is in-memory (a smoke); a real deployment passes a CssCentralPod +
 // an HMAC participantFor so the pod never holds a reversible chat id.
 
-import { TelegramFeedbackBot } from '../src/channel/telegram-bot.js';
-import { InMemoryCentralPod } from '../src/pod/central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
-import { walkLog, walkLogOn, walkLogFile } from '../src/walk-log.js';
-import { cryptoForProject } from '../src/pod/crypto-config.js';
-import { applyLlmRoute, assertCleanRouteSafe } from '../src/ollama.js';
+import { walkLogOn, walkLogFile } from '../src/walk-log.js';
+import { startTelegramProjectBot } from '../src/host/project-bot.js';
 
 const token = process.env.FP_TG_BOT_TOKEN || process.env.HOUSEHOLD_TG_BOT_TOKEN;
 if (!token) { console.log('SKIP: set FP_TG_BOT_TOKEN (a Telegram bot token)'); process.exit(0); }
 if ((process.env.FP_LLM_ROUTE || 'local') === 'local' && !process.env.FP_LLM_BASEURL) console.log('NOTE: local route without FP_LLM_BASEURL — review/clean will hit the default Ollama; set FP_LLM_ROUTE=privatemode for the enclave.');
-
-let TelegramBridge;
-try { ({ TelegramBridge } = await import('@onderling/chat-agent/bridges/telegram')); }
-catch (e) { console.log('SKIP: chat-agent substrate not available —', e.message); process.exit(0); }
 
 // Privacy is config-driven: set FP_PROJECT_PUBKEY to have the bot SEAL every contribution to
 // the project key (the bot is a host-blind writer — it never holds the private key).
@@ -37,45 +30,19 @@ const config = validateProjectConfig({
   signal: { layer1OnDevice: true },
   ...(process.env.FP_PROJECT_PUBKEY ? { privacy: { seal: true, projectPublicKey: process.env.FP_PROJECT_PUBKEY } } : {}),
 });
-// The bot OWNS its LLM route (like basis-bot.js): apply the configured route and refuse an unsafe clean route
-// up front. Without this the process fell back to the local default, the model was not there, every clean call
-// failed silently and a walk ran on the deterministic floors alone (2026-09-06).
-const applied = applyLlmRoute(config.llm);
-assertCleanRouteSafe(config.llm);
-console.log(`LLM route: ${applied.route} (${applied.baseURL}) model ${config.llm.model}`);
-if (config.privacy.seal) console.log('sealing contributions to the project key (host-blind writer).');
-walkLog({ kind: 'run', bot: 'telegram', project: config.projectId, llm: { route: config.llm.route, model: config.llm.model } });
-if (walkLogOn()) console.log(`walk log → ${walkLogFile()}`);
-const bridge = new TelegramBridge({ botToken: token, mode: 'long-polling', dropPendingUpdates: true });
-
-// Tier-3c: real CSS pod when owner credentials are present. The TG bot service runs as the
-// project-pod OWNER — it provisions each participant's ACP container on first contact
-// (onActivate) and writes to it (post-receipt). Otherwise in-memory (a pure smoke).
-let pod = new InMemoryCentralPod();
-let ownPod = new InMemoryCentralPod();   // Option C — the bot's OWN pod for each participant's raw record
-let onActivate;
-if (process.env.CSS_URL && process.env.FP_OWNER_CLIENT_ID && process.env.FP_PROJECT_POD) {
-  try {
-    const { clientCredentialsFetch } = await import('../src/pod/css-auth.js');
-    const { CssCentralPod } = await import('../src/pod/css-central-pod.js');
-    const { provisionCssPod } = await import('../src/activation/provision-css-pod.js');
-    const projectPodBase = process.env.FP_PROJECT_POD;
-    const ownerWebId = process.env.FP_OWNER_WEBID;
-    const ownerFetch = await clientCredentialsFetch({ cssUrl: process.env.CSS_URL, clientId: process.env.FP_OWNER_CLIENT_ID, clientSecret: process.env.FP_OWNER_CLIENT_SECRET });
-    pod = new CssCentralPod({ authedFetch: ownerFetch, podBase: `${projectPodBase.replace(/\/$/, '')}/central/`, ...cryptoForProject({ config }) });
-    // Option C — the bot's own pod at .../own/ (owner-only; the raw stays bot-held, off central).
-    // No ACP provisioning needed: the owner writes it and CSS auto-creates the containers on PUT.
-    ownPod = new CssCentralPod({ authedFetch: ownerFetch, podBase: `${projectPodBase.replace(/\/$/, '')}/own/`, ...cryptoForProject({ config }) });
-    // provision central/<participant>/ once per chat; owner is the writer (participantWebId = owner).
-    onActivate = (participant) => provisionCssPod({ ownerFetch, projectPodBase, participant, participantWebId: ownerWebId, ownerWebId });
-    console.log('using CssCentralPod (central + own) + per-participant provisioning at', projectPodBase);
-  } catch (e) { console.log('CSS pod unavailable, using in-memory:', e.message); }
+// The composition is shared with the box's `project.js run` (src/host/project-bot.js): route applied and
+// checked up front, CSS pods + provisioning when owner credentials are present, in-memory otherwise (said).
+let started;
+try {
+  started = await startTelegramProjectBot({ config, token, pseudonymSecret: process.env.FP_PSEUDONYM_SECRET,
+    owner: process.env.CSS_URL && process.env.FP_OWNER_CLIENT_ID && process.env.FP_PROJECT_POD
+      ? { cssUrl: process.env.CSS_URL, clientId: process.env.FP_OWNER_CLIENT_ID, clientSecret: process.env.FP_OWNER_CLIENT_SECRET, ownerWebId: process.env.FP_OWNER_WEBID, projectPod: process.env.FP_PROJECT_POD }
+      : undefined });
+} catch (e) {
+  if (/chat-agent|Cannot find/.test(e.message)) { console.log('SKIP: chat-agent substrate not available —', e.message); process.exit(0); }
+  throw e;
 }
-// HMAC pseudonym secret (held off the pod). Prefer FP_PSEUDONYM_SECRET; else reuse the bot
-// token — stable + secret, so the same chatId → the same pseudonym without a reversible id on the pod.
-const pseudonymSecret = process.env.FP_PSEUDONYM_SECRET || token;
-const bot = new TelegramFeedbackBot({ bridge, pod, config, onActivate, pseudonymSecret, ownPod });
+if (walkLogOn()) console.log(`walk log → ${walkLogFile()}`);
 
-await bot.start();
 console.log('feedback bot running (long-polling). DM it, then /klaar, then tap a consent button. Ctrl-C to stop.');
-process.on('SIGINT', async () => { console.log(`\nstored ${(await pod.list()).length} contribution(s). stopping…`); await bot.stop(); process.exit(0); });
+process.on('SIGINT', async () => { console.log('\nstopping…'); await started.stop(); process.exit(0); });
