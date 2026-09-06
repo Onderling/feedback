@@ -79,7 +79,8 @@ export class BasisBot {
     // corrId DONE); no reply bubble, no action.
     if (!text && m.data) return { stored: false, charter: !!m.data.charter };
 
-    const action = parseControl(text) || await classifyIntent(text, { model: this.#model });
+    const awaiting = session.awaitingEdit || session.awaitingEditPoint;   // a reply to an edit prompt is never classified
+    const action = parseControl(text) || (awaiting ? { kind: 'message', text } : await classifyIntent(text, { model: this.#model }));
     const say = (txt, buttons) => this.#say(chatId, txt, buttons);
     return runAction(action, { session, say, strings: this.#strings });
   }

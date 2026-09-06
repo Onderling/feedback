@@ -64,7 +64,7 @@ export function thinkingFor(task, opts = {}) {
 export const MINIMAL_CLEAN = {
   nl: `Je schoont één feedbackbericht licht op. Persoonsgegevens zijn al verwijderd en staan als markeringen tussen haken — laat die EXACT staan, verander of verwijder ze niet en voeg geen nieuwe toe.
 Doe alleen dit, in dezelfde taal en met behoud van de betekenis:
-1. Vervang een eventuele resterende PERSOONSnaam door "iemand" (of een rol, bv. "de manager"). Laat namen van organisaties, bedrijven en plaatsen staan.
+1. Vervang een eventuele resterende PERSOONSnaam door "iemand" (of een rol, bv. "de manager"). Laat namen van organisaties, bedrijven en plaatsen staan. Een relatie of rol ZONDER naam ("mijn zoon", "de buurman", "onze manager") is geen naam — laat die precies zo staan. Een voornaam is ook een naam als hij met een kleine letter geschreven is ("buur bert" → "de buurman").
 2. Haal scheldwoorden/beledigingen weg. Levert dat een onvolledige zin op (bv. "de wethouder is een sukkel" → "de wethouder is een"), herschrijf het dan minimaal tot een korte, neutrale weergave van het punt (bv. → "kritiek op hoe de wethouder zijn werk doet"). Behoud anders het punt zoals het staat.
 3. Neem overdreven toon weg, maar verzwak NIET hoe ernstig iets is.
 Geef ALLEEN de opgeschoonde tekst terug. Geen aanhalingstekens, geen uitleg.`,

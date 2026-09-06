@@ -6,6 +6,7 @@
 // not here, because they are jurisdiction- and project-specific.
 
 export default {
+  smalltalkAck: 'Hoi! Vertel gerust wat je kwijt wilt. Ik verzamel je punten en laat ze je eerst zien voordat er iets gedeeld wordt. Typ /menu voor de opties.',
   received: 'Ontvangen ✓. Stuur gerust meer, of typ /bekijk om je punten tot nu toe te bekijken (je kunt daarna gewoon doorgaan).',
   rejected: (reason) => `Dit bericht is niet opgeslagen (${reason}). Pas het gerust aan en stuur opnieuw.`,
 
@@ -43,6 +44,7 @@ export default {
   verificationRequired: 'Dit project accepteert alleen bijdragen van een geverifieerde identiteit. Doe mee via de Basis-app, die je bijdrage op je eigen apparaat ondertekent.',
   consentFailed: (n) => `${n} bijdrage(n) konden niet worden opgeslagen en zijn niet verstuurd. Er is niets bewaard.`,
 
+  withdrawFailed: (id) => `Ik kon ${id} niet intrekken — die bijdrage bestaat niet (meer) of is al opgenomen. Typ /intrekken om te zien wat je kunt intrekken.`,
   withdrawButton: '↩ Intrekken',
   contributionsHeader: 'Je bijdragen:',
   contributionLine: (n, text, id) => `${n}. ${text}  —  /intrekken ${id}`,

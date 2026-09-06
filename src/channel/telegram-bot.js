@@ -13,6 +13,7 @@ import { ChannelDispatcher } from './dispatcher.js';
 import { TelegramChannelAdapter } from './telegram-adapter.js';
 import { getStrings } from '../strings/index.js';
 import { parseControl, runAction } from './actions.js';
+import { classifyIntent } from './intent.js';
 import { hmacPseudonym } from './pseudonym.js';
 
 export class TelegramFeedbackBot {
@@ -78,10 +79,16 @@ export class TelegramFeedbackBot {
     const session = await this.#session(chatId);
     session.adapter.setReplyTo(m.messageId);
 
-    // Telegram's grammar is explicit slashes + button callbacks; anything else is feedback.
+    // Telegram's grammar is explicit slashes + button callbacks; free text goes through the SAME intent
+    // classifier as basis (a typed "klaar" is a review, "hoi" is small talk, the rest is feedback) — the two
+    // channels must understand a person the same way. A reply to an edit prompt is never classified.
     // `m.edited` (a message the participant edited in the TG client) rides along so the stored
     // contribution can be flagged edited.
-    const action = parseControl(text) || { kind: 'message', text, edited: Boolean(m.edited) };
+    const awaiting = session.awaitingEdit || session.awaitingEditPoint;
+    const action = parseControl(text)
+      || (awaiting ? null : await classifyIntent(text, { model: this.#config?.llm?.model }))
+      || { kind: 'message', text, edited: Boolean(m.edited) };
+    if (action.kind === 'message' && m.edited) action.edited = true;
     const say = (txt, buttons) => this.#say(chatId, txt, buttons);
     return runAction(action, { session, say, strings: this.#strings });
   }

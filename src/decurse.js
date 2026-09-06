@@ -9,6 +9,7 @@ const PROFANITY = [
   /\bkanker\w*/gi, /\btyfus\w*/gi, /\btering\b/gi, /\bhufter\b/gi,
   /\bklootzak\w*/gi, /\bsukkel\b/gi, /\bdebiel\b/gi, /\bmongool\b/gi,
   /\beikel\b/gi, /\bidioot\b/gi, /\blul\b/gi,
+  /\bhansworst\b/gi, /\bhufter\w*/gi, /\bzak(?:kenwasser)?\b/gi, /\bprutser\b/gi, /\bkneus\b/gi, /\boen\b/gi,   // walk-1 / journey misses under the minimal profile (the model let them through)
   // English
   /\bfuck\w*/gi, /\bshit\w*/gi, /\bbullshit\b/gi, /\bbastard\w*/gi,
   /\bidiot\w*/gi, /\bmoron\w*/gi, /\basshole\w*/gi, /\bbitch\w*/gi,
