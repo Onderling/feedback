@@ -1,0 +1,21 @@
+# deploy/roles/feedback-aggregate.yml — the AGGREGATING half of the feedback system as a box role.
+# Reads consented, cleaned contributions from each project's central pod on a schedule, writes the
+# report and the transparency counts under /data/reports/<project>/. Never sees raw text — this is
+# the half a hosting partner may run. Same image and data volume as feedback-collect.
+services:
+  feedback-aggregate:
+    build:
+      context: ..
+      dockerfile: deploy/Dockerfile.box
+    command: ["node", "scripts/project.js", "aggregate", "--every", "${FP_AGGREGATE_EVERY:-86400}"]
+    restart: unless-stopped
+    environment:
+      FP_PORTAL_STORE: "/data/portal-store.json"
+      FP_PROJECT_SECRETS: "/data/projects.env"
+      FP_REPORTS_DIR: "/data/reports"
+      FP_RUNNER_ROLE: "${FP_RUNNER_ROLE:-host}"
+      PRIVATEMODE_API_KEY: "${PRIVATEMODE_API_KEY:-}"
+    volumes:
+      - feedback-data:/data
+volumes:
+  feedback-data:

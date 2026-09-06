@@ -77,6 +77,29 @@ Configuration knobs are catalogued in [`docs/parameters.md`](docs/parameters.md)
 `.env` files or run artifacts** (`results-*.md`, `portal-store.json`) — they are gitignored for a
 reason.
 
+## Run it on a box (the operator's side)
+
+The monorepo's box runner (`deploy/box/` there) runs this repo as two roles from `deploy/roles/`
+here: **`feedback-collect`** (activation service, the project lead's portal, one Telegram bot per
+project — this half sees raw text, so it runs on our box or the customer's) and
+**`feedback-aggregate`** (the scheduled aggregation + the transparency counts — the half a hosting
+partner may run). Both build from `deploy/Dockerfile.box` and share one data volume.
+
+A project is one command on the box:
+
+```bash
+node scripts/project.js new or-ziekenhuis --template or-feedback --name "OR Ziekenhuis X" --css-url http://pod:3000
+node scripts/project.js list
+node scripts/project.js run              # the bots (FP_TG_TOKEN_<ID> per project)
+node scripts/project.js aggregate        # once; --every 86400 loops
+```
+
+`new` reserves the central pod on the CSS (owner credentials go to the secrets file, never printed),
+registers the project in the portal store, mints invite codes and prints the links. Every project
+config carries the **four levers** — `channels`, `participants.home`/`lifetime`, `botMode`, `output`
+(`src/config/project-config.js` `LEVERS`); a value that is declared but not built yet is refused with
+"not yet", so a template for a later direction (`templates/`) can already say what it wants.
+
 ## Relation to the platform
 
 Depends on `@onderling/{core, pod-client, pseudo-pod, redaction, attribute-charter}` —

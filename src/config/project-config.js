@@ -14,9 +14,32 @@ import { createCharter } from '@onderling/attribute-charter';
  *  ESCALATION_CATEGORIES in categories.js; tracked in the ethics doc §8. */
 export const ESCALATION_CATEGORIES = ['crisis', 'child-safety', 'medical-emergency', 'abuse', 'safety', 'harassment'];
 
+/** THE FOUR LEVERS — the one place where the eight directions of the strategy documents differ
+ *  (monorepo plans/PLAN-vps-runner.md §4). Fields of every project config from day one; only the
+ *  `built` values run today, the `reserved` ones are names a template may already use — validation
+ *  answers "not yet" for them, so a direction can be declared honestly before it is built. */
+export const LEVERS = Object.freeze({
+  channels:             { built: ['telegram', 'basis'], reserved: ['whatsapp', 'teams', 'slack', 'voice', 'phone'] },
+  'participants.home':  { built: ['hosted', 'own-pod', 'companion'], reserved: [] },
+  'participants.lifetime': { built: ['project'], reserved: ['topic', 'person'] },
+  botMode:              { built: ['collect'], reserved: ['ask', 'dialogue'] },
+  output:               { built: ['tracks'], reserved: ['coding', 'clinical', 'cross-report', 'knowledge', 'segments'] },
+});
+export const RESERVED_LEVER_VALUES = Object.freeze(Object.fromEntries(Object.entries(LEVERS).map(([k, v]) => [k, v.reserved])));
+const all = (k) => [...LEVERS[k].built, ...LEVERS[k].reserved];
+
 export const ProjectConfigSchema = z.object({
   projectId: z.string().min(1),
   projectName: z.string().min(1).optional(),
+
+  // the four levers (see LEVERS) — defaults are the OR template's values, all built
+  channels: z.array(z.enum(all('channels'))).min(1).default(['telegram']),
+  participants: z.object({
+    home: z.enum(all('participants.home')).default('hosted'),
+    lifetime: z.enum(all('participants.lifetime')).default('project'),
+  }).default({ home: 'hosted', lifetime: 'project' }),
+  botMode: z.enum(all('botMode')).default('collect'),
+  output: z.array(z.enum(all('output'))).min(1).default(['tracks']),
 
   // D1 — LLM route. No universal default: every project picks. (apiKey is NOT stored
   // here — it is injected from the environment / secret store at runtime.)
@@ -154,6 +177,13 @@ export const ProjectConfigSchema = z.object({
   // Optional; absent ⇒ the identifiability trigger stays inert (structural warnings still work).
   cohortHint: z.number().int().positive().optional(),
 }).superRefine((cfg, ctx) => {
+  // reserved lever values: declared, not built — say "not yet", name the value
+  const notYet = (lever, value, pathArr) => ctx.addIssue({ code: 'custom', path: pathArr, message: `not yet: ${lever} "${value}" is a reserved lever value (declared, not built)` });
+  for (const v of cfg.channels) if (LEVERS.channels.reserved.includes(v)) notYet('channels', v, ['channels']);
+  if (LEVERS['participants.home'].reserved.includes(cfg.participants.home)) notYet('participants.home', cfg.participants.home, ['participants', 'home']);
+  if (LEVERS['participants.lifetime'].reserved.includes(cfg.participants.lifetime)) notYet('participants.lifetime', cfg.participants.lifetime, ['participants', 'lifetime']);
+  if (LEVERS.botMode.reserved.includes(cfg.botMode)) notYet('botMode', cfg.botMode, ['botMode']);
+  for (const v of cfg.output) if (LEVERS.output.reserved.includes(v)) notYet('output', v, ['output']);
   // The always-on writer can only seal if it has a public key to seal to.
   if (cfg.privacy?.seal && !cfg.privacy.projectPublicKey) {
     ctx.addIssue({ code: 'custom', path: ['privacy', 'projectPublicKey'],
@@ -166,7 +196,13 @@ export const ProjectConfigSchema = z.object({
  *  (the single source of the charter rules: cap ≤3, coarse vocabulary only, per-attr
  *  purpose). An invalid charter throws a clear Error the portal surfaces as a 400. */
 export function validateProjectConfig(raw) {
-  const cfg = ProjectConfigSchema.parse(raw);
+  const parsed = ProjectConfigSchema.safeParse(raw);
+  if (!parsed.success) {
+    const ny = parsed.error.issues.find((i) => /^not yet:/.test(i.message));
+    if (ny) throw new Error(ny.message);
+    throw parsed.error;
+  }
+  const cfg = parsed.data;
   if (cfg.charter) {
     try {
       // createCharter validates (cap/vocabulary/dups/purpose) AND canonicalises

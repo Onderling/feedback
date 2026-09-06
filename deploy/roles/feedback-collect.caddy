@@ -1,0 +1,6 @@
+${ACTIVATE_HOST} {
+	reverse_proxy feedback-activation:8787
+}
+${PORTAL_HOST} {
+	reverse_proxy feedback-portal:8080
+}
