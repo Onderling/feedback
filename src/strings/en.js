@@ -3,6 +3,8 @@
 
 export default {
   smalltalkAck: 'Hi! Tell me whatever you want to share. I collect your points and show them to you first, before anything is shared. Type /menu for the options.',
+  submittedLeft: (n) => `${n} point(s) still waiting — type /review to see them, or "send nothing" to drop them.`,
+  editPointEmpty: 'That does not look like text. Type the new text for this point, or /review to leave it as it was.',
   received: 'Received ✓. Send more whenever you like, or type /review to check your points so far (you can carry on after).',
   rejected: (reason) => `This message was not stored (${reason}). Feel free to adjust it and send again.`,
 
