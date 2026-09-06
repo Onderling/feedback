@@ -32,7 +32,9 @@ const config = validateProjectConfig({
   projectId: 'tg-smoke',
   llm: { route: process.env.FP_LLM_ROUTE || 'local', model: process.env.FP_LLM_MODEL || process.env.FP_MODEL || 'qwen2.5:7b' },
   aggregation: { k: 3 },
-  signal: { layer1OnDevice: true, escalationCategories: ['crisis'] },
+  // every category on: the walk must see the offer the label layer earns (walk 5: safety + child-safety
+  // labelled, no offer, because this list said crisis only)
+  signal: { layer1OnDevice: true },
   ...(process.env.FP_PROJECT_PUBKEY ? { privacy: { seal: true, projectPublicKey: process.env.FP_PROJECT_PUBKEY } } : {}),
 });
 // The bot OWNS its LLM route (like basis-bot.js): apply the configured route and refuse an unsafe clean route
