@@ -1,6 +1,6 @@
 # Contributing — the same rules as the basis monorepo
 
-- **Branch per feature; the trunk moves by merge.** `development` is the trunk, `master` takes releases and
+- **Branch per feature; the trunk moves by merge.** `development` is the trunk, `live` takes releases and
   hotfixes only. Never commit on either: `git switch -c feat/<what>`, land it green, open a PR into
   `development`. The pre-commit hook refuses otherwise — run `git config core.hooksPath .githooks` once per
   clone.
