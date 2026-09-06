@@ -135,11 +135,19 @@ export class ChannelDispatcher {
     return this.#session.points;
   }
 
-  /** Edit a reviewed point's curated text in place (the user's correction before consent). */
+  /** Edit a reviewed point's curated text in place (the user's correction before consent). A correction
+   *  without any letter (walk 4: ",,") is not a correction — the point is left as it was and null returned. */
   editPoint(id, text) {
     const p = this.#session.points.find((x) => x.id === id);
-    if (p && typeof text === 'string' && text.trim()) { p.text = text.trim(); p.edited = true; }
+    if (!p || typeof text !== 'string' || !/\p{L}/u.test(text)) return null;
+    p.text = text.trim(); p.edited = true;
     return p;
+  }
+
+  /** "Niets versturen" — the explicit decline: the reviewed batch is dropped (escalated messages stay). */
+  declineBatch() {
+    this.#session.points = [];
+    this.#session.messages = this.#session.messages.filter((m) => escalates(m.fm.signal, this.#gate()));
   }
 
   /** Re-present the CURRENT reviewed points (after an edit) WITHOUT re-curating — re-running review()
@@ -201,11 +209,15 @@ export class ChannelDispatcher {
       await this.#adapter.send({ type: 'consent-failed', count: attempted || 1, reason: failure.message });
       return [];
     }
-    await this.#adapter.send({ type: 'submitted', ids: written });
-    // the reviewed batch is decided (consented or declined) — clear it so a second /klaar can't re-offer
-    // and re-write the same points ("duplicate contribution id"). Escalated (signal-track) messages stay.
-    this.#session.messages = this.#session.messages.filter((m) => escalates(m.fm.signal, this.#gate()));
-    this.#session.points = [];
+    // Only the SENT points leave the batch. Sending one point is not declining the others (walk 4: one
+    // "Verstuur 1" wiped four unsent points — "Alle punten weg? :("); they stay for the next /bekijk. The
+    // explicit decline is "Niets versturen" (cancel), which clears the batch. Escalated messages stay
+    // out of the points either way.
+    const sent = new Set(written.map((cid) => cid.split(':').pop().split('-')[0]));
+    this.#session.points = this.#session.points.filter((p) => !sent.has(p.id));
+    const pointedRaw = new Set(this.#session.points.map((p) => p.raw));
+    this.#session.messages = this.#session.messages.filter((m) => escalates(m.fm.signal, this.#gate()) || pointedRaw.has(m.raw));
+    await this.#adapter.send({ type: 'submitted', ids: written, left: this.#session.points.length });
     return written;
   }
 

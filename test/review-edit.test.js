@@ -32,7 +32,7 @@ test('parseControl: per-message edit callbacks (prompt + inline)', () => {
 test('runAction: [✏] inline edits + re-shows; [✏] alone prompts, then the next msg edits', async () => {
   const calls = [];
   const dispatcher = {
-    editPoint: (id, t) => { calls.push(['edit', id, t]); },
+    editPoint: (id, t) => { calls.push(['edit', id, t]); return /\p{L}/u.test(t) ? { id, text: t } : null; },   // like the real one: a correction without letters is refused
     showReview: async () => { calls.push(['showReview']); },
     handleMessage: async (t) => { calls.push(['message', t]); },
   };
@@ -54,4 +54,12 @@ test('runAction: [✏] inline edits + re-shows; [✏] alone prompts, then the ne
   await runAction({ kind: 'message', text: 'typed correction' }, { session, say, strings: s });
   assert.deepEqual(calls, [['edit', 'p1', 'typed correction'], ['showReview']]);
   assert.equal(session.awaitingEditPoint, null);
+
+  // walk 4: ",," typed as a correction — refused, still waiting, no review re-shown
+  calls.length = 0; said.length = 0;
+  await runAction(parseControl('fp:edit:p1'), { session, say, strings: s });
+  await runAction({ kind: 'message', text: ',,' }, { session, say, strings: s });
+  assert.deepEqual(calls, [['edit', 'p1', ',,']]);
+  assert.equal(session.awaitingEditPoint, 'p1', 'still waiting for a real correction');
+  assert.match(said.at(-1), /geen tekst/);
 });

@@ -7,6 +7,8 @@
 
 export default {
   smalltalkAck: 'Hoi! Vertel gerust wat je kwijt wilt. Ik verzamel je punten en laat ze je eerst zien voordat er iets gedeeld wordt. Typ /menu voor de opties.',
+  submittedLeft: (n) => `${n} punt(en) staan nog klaar — typ /bekijk om ze te zien, of "niets versturen" om ze te laten vallen.`,
+  editPointEmpty: 'Dat lijkt geen tekst. Typ de nieuwe tekst voor dit punt, of typ /bekijk om het te laten zoals het was.',
   received: 'Ontvangen ✓. Stuur gerust meer, of typ /bekijk om je punten tot nu toe te bekijken (je kunt daarna gewoon doorgaan).',
   rejected: (reason) => `Dit bericht is niet opgeslagen (${reason}). Pas het gerust aan en stuur opnieuw.`,
 

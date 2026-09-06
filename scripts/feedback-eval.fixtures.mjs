@@ -116,15 +116,20 @@ export const INTENT = [
 // ── L4 journey — scripted Dutch conversations through the bot's own handler ───────────────────────────
 // Each step: [what the person types, check({ replies, pod, text, buttons }) → a problem string or null].
 export const JOURNEY = [
-  { id: 'j-basic', title: 'groet → twee punten → bekijk → één bewerken → alles versturen → mijn → intrekken', steps: [
+  { id: 'j-basic', title: 'groet → twee punten → bekijk → één bewerken → één versturen (de rest blijft) → lege correctie → alles versturen → mijn → intrekken', steps: [
     ['Moi', ({ text }) => /Hoi!/.test(text) ? null : 'a greeting should be answered, not stored'],
     ['De wachtlijst bij de GGZ is veel te lang, mijn zoon wacht al 4 maanden.', ({ text }) => /Ontvangen/.test(text) ? null : 'no "Ontvangen"'],
     ['En Jan de Vries van de balie is een klootzak, hij doet nooit iets.', ({ text }) => /Ontvangen/.test(text) ? null : 'no "Ontvangen"'],
     ['ik ben klaar', ({ text, buttons }) => !/GGZ|wachtlijst/i.test(text) ? 'point 1 missing from the review' : /Jan de Vries|klootzak/i.test(text.split('origineel')[0]) ? 'name or profanity left in the curated point' : buttons.includes('fp:consent:all') ? null : 'no consent-all button'],
     ['bewerk punt 2', ({ text }) => /bewerk|nieuwe tekst|typ/i.test(text) ? null : 'no edit prompt'],
     ['De medewerker van de balie reageert nooit op vragen.', ({ text }) => /reageert nooit op vragen/.test(text) ? null : 'edited text not shown in the review'],
-    ['verstuur alles', ({ pod, text }) => pod.list().length === 2 ? (/opgeslagen|verstuurd|2 bijdrage/i.test(text) ? null : 'no confirmation text') : `pod holds ${pod.list().length}, wanted 2`],
-    ['wat heb ik eigenlijk allemaal opgestuurd?', ({ text }) => /reageert nooit op vragen/.test(text) && !/Jan de Vries/.test(text) ? null : 'my contributions should list the edited, clean text'],
+    ['fp:consent:p1', ({ pod, text }) => pod.list().length === 1 && /1 punt\(en\) staan nog klaar/.test(text) ? null : `sending ONE must keep the other: pod ${pod.list().length}, text ${text.slice(0, 80)}`],
+    ['/bekijk', ({ text, buttons }) => /reageert nooit op vragen/.test(text) && !/GGZ/.test(text) && buttons.includes('fp:consent:p2') ? null : `the unsent point must still be reviewable: ${text.slice(0, 80)}`],
+    ['bewerk punt 2', ({ text }) => /correctie/i.test(text) ? null : 'no edit prompt'],
+    [',,', ({ text }) => /geen tekst/i.test(text) ? null : `",," must not be accepted as a correction: ${text.slice(0, 60)}`],
+    ['De baliemedewerker reageert nooit op vragen.', ({ text }) => /baliemedewerker reageert nooit/.test(text) ? null : 'the real correction after a rejected one must land'],
+    ['verstuur alles', ({ pod, text }) => pod.list().length === 2 ? (/opgeslagen|verstuurd|1 bijdrage/i.test(text) && !/staan nog klaar/.test(text) ? null : `confirmation text: ${text.slice(0, 80)}`) : `pod holds ${pod.list().length}, wanted 2`],
+    ['wat heb ik eigenlijk allemaal opgestuurd?', ({ text }) => /baliemedewerker reageert nooit/.test(text) && /GGZ/.test(text) && !/Jan de Vries/.test(text) ? null : 'my contributions should list both, the edited one clean'],
     ['/intrekken', ({ buttons }) => buttons.some((b) => b.startsWith('fp:withdraw:')) ? null : 'no withdraw buttons'],
     ['/intrekken eval:bestaat-niet', ({ text, pod }) => pod.list().length === 2 && /niet intrekken/.test(text) ? null : `a wrong id must be answered: ${text.slice(0, 60)}`],
     ['fp:withdraw:__first__', ({ pod, text }) => pod.list().length === 1 && /ingetrokken/i.test(text) ? null : `withdraw: pod holds ${pod.list().length}, text ${text.slice(0, 60)}`],   // __first__ = the first stored id, filled in by the eval

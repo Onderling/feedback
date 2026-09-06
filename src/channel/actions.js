@@ -63,7 +63,8 @@ function consentIds(action, points) {
  * @param {object} action
  * @param {{ session:{dispatcher, points:Array, adapter}, say:(text:string,buttons?:Array)=>Promise<void>, strings:object }} ctx
  */
-export async function runAction(action, { session, say, strings: s }) {
+export async function runAction(action, { session, say: sayRaw, strings: s }) {
+  const say = (text, buttons) => { walkLog({ kind: 'reply', via: 'say', text: String(text ?? '').slice(0, 200), buttons: (buttons || []).map((b) => b.id) }); return sayRaw(text, buttons); };
   walkLog({ kind: 'turn', chat: shortChat(session?.chatId ?? session?.participant ?? session?.id), action: action?.kind, ...(action?.kind === 'message' ? { chars: String(action.text ?? '').length } : {}) });
   switch (action.kind) {
     case 'menu':
@@ -92,6 +93,7 @@ export async function runAction(action, { session, say, strings: s }) {
     case 'smalltalk':
       return say(s.smalltalkAck);
     case 'cancel':
+      session.dispatcher.declineBatch?.();
       return say(s.cancelAck);
     case 'escalate-yes':
       return say(s.escalateYesAck);
@@ -107,13 +109,18 @@ export async function runAction(action, { session, say, strings: s }) {
       session.awaitingEdit = true;                                 // [Edit] tapped → the next free text rewords it
       return say(s.verifyEditPrompt);
     case 'edit-point':                                             // per-message [Bewerk] — inline text, or prompt
-      if (action.text) { session.awaitingEditPoint = null; session.dispatcher.editPoint(action.id, action.text); return void await session.dispatcher.showReview(); }
+      if (action.text) { session.awaitingEditPoint = null; if (!session.dispatcher.editPoint(action.id, action.text)) return say(s.editPointEmpty); return void await session.dispatcher.showReview(); }
       session.awaitingEditPoint = action.id;                       // tapped without text → the next free text edits it
       return say(s.editPointPrompt ?? s.verifyEditPrompt);
     case 'message':
     default:
       if (session.awaitingEdit) { session.awaitingEdit = false; return void await session.dispatcher.editVerificationSummary(action.text); }
-      if (session.awaitingEditPoint) { const id = session.awaitingEditPoint; session.awaitingEditPoint = null; session.dispatcher.editPoint(id, action.text); return void await session.dispatcher.showReview(); }
+      if (session.awaitingEditPoint) {
+        const id = session.awaitingEditPoint;
+        if (!session.dispatcher.editPoint(id, action.text)) return say(s.editPointEmpty);   // keep waiting for a real correction
+        session.awaitingEditPoint = null;
+        return void await session.dispatcher.showReview();
+      }
       return void await session.dispatcher.handleMessage(action.text, { edited: action.edited });
   }
 }

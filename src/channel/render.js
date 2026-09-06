@@ -35,7 +35,7 @@ export function renderMessage(msg, s = getStrings()) {
       return { text: `${s.reviewIntro}\n\n${lines.join('\n')}`, buttons };
     }
     case 'submitted':
-      return { text: msg.ids?.length ? s.submitted(msg.ids.length) : s.submittedEmpty };
+      return { text: msg.ids?.length ? `${s.submitted(msg.ids.length)}${msg.left ? ` ${s.submittedLeft(msg.left)}` : ''}` : s.submittedEmpty };
     // verify-summary loop (Stage 2) — the bubble shows the summary + the points it's based on (the
     // raw-vs-curated compare) + approve/edit/withdraw buttons. Only the approved summary leaves.
     case 'verify-summary': {
