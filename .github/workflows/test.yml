@@ -1,0 +1,27 @@
+name: tests
+on:
+  push:
+    branches: ['**']
+  pull_request:
+jobs:
+  suite:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { path: feedback }
+      # The platform packages are `file:` links into a sibling monorepo checkout until they are published.
+      - uses: actions/checkout@v4
+        with: { repository: Onderling/basis, ref: development, path: canopy-mono }
+      - uses: actions/setup-node@v4
+        with: { node-version: '20' }
+      - uses: pnpm/action-setup@v4
+        with: { version: 10 }
+      - name: Install the platform (hoisted, frozen)
+        working-directory: canopy-mono
+        run: pnpm install --frozen-lockfile && node scripts/relink-workspace.mjs
+      - name: Install the bot
+        working-directory: feedback
+        run: npm install --no-audit --no-fund
+      - name: The suite (no model needed)
+        working-directory: feedback
+        run: node --test --test-timeout=30000

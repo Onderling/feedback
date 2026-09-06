@@ -1,0 +1,14 @@
+#!/usr/bin/env sh
+# Branch per feature; the trunk moves by merge (same rule as the basis monorepo).
+# `development` is the trunk, `master` is for releases and hotfixes only.
+branch="$(git symbolic-ref --short HEAD 2>/dev/null)"
+case "$branch" in
+  master|development)
+    if [ "${ALLOW_PROTECTED_COMMIT:-}" = "1" ]; then exit 0; fi
+    echo "✖ refusing to commit directly on '$branch'." >&2
+    echo "  Branch first:  git switch -c feat/<what-you-are-doing>" >&2
+    echo "  Then open a PR into development; master takes releases and hotfixes only." >&2
+    echo "  (Deliberate exception: ALLOW_PROTECTED_COMMIT=1 git commit …)" >&2
+    exit 1 ;;
+esac
+exit 0
