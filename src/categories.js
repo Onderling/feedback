@@ -36,6 +36,7 @@ const HARASSMENT = [
   /\bseksuele (gunsten|opmerkingen|toespelingen|intimidatie)\b/i,
   /\bongewenste? (intimiteiten|avances|aanrakingen|opmerkingen)\b/i,
   /\bintimidatie\b/i, /\bnaaktfoto/i, /\bzat aan mij\b/i, /\bversierde mij\b/i,
+  /\bopmerkingen over (mijn|haar|zijn) (lichaam|uiterlijk|borsten|billen|kleding)\b/i,
   /\bsexual (comments|harass|advances|favou?rs|propositions?)\b/i,
   /\bharass(ed|ment)?\b/i, /\binappropriate (comments|touching|remarks)\b/i,
   /\bpromoted faster if\b/i, /\bcomment(s|ing) on my body\b/i, /\bmade a pass at me\b/i,
@@ -81,6 +82,7 @@ const CHILD_SAFETY = [
   /\bminderjarige?\b.{0,20}\b(mishandel|misbruik|gevaar|verwaarloos)/i,
   /\bchild(ren)?\b.{0,25}\b(in danger|at (immediate )?risk|being (abused|neglected|harmed)|not safe)\b/i,
   /\ba minor\b.{0,15}\b(is|being)\b.{0,15}\b(abused|harmed|in danger|neglected)\b/i,
+  /\b(hits?|beats?|slaat|mishandelt)\b.{0,8}\b(the |de )?(kids|children|kinderen|leerlingen)\b/i,
   // active grooming / a minor currently in danger (scenario 1 x4)
   /\bman she met online\b/i, /\b(een|a) man .{0,15}\b(online ontmoet|met online)/i,
   /\b(nichtje|niece|dochter|zoon|kind|minderjarige?|14[- ]?(jarig|year))\b.{0,70}\b(scared and cannot leave|bang en kan|kan niet weg|wordt vermist|met een man.{0,15}online|met online)\b/i,

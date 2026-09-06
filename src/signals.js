@@ -21,6 +21,8 @@ const CRISIS = [
   /\bmezelf (iets aandoen|van het leven beroven)\b/i,
   /\been eind aan (mijn|het) leven\b/i,
   /\ber een eind aan maken\b/i,
+  // "iedereen is beter af zonder mij" / "better off without me" (golden set 2026-09-06)
+  /\bbeter af\b.{0,25}\bzonder mij\b/i, /\bbetter off without me\b/i,
   // Dutch — indirect / planning (the zorg misses)
   /\bniet meer wil\b/i,                                    // "dagen dat ik niet meer wil"
   /\bniet meer wakker\s*(te\s*)?word/i,                    // "niet meer wakker worden"
@@ -74,8 +76,12 @@ const CRISIS = [
 
 const SAFETY = [
   // Dutch — widened after the stress test (w5 "wachten op een dode" slipped past)
-  /\bdodelijk(e)?\b/i,
+  // "dodelijk" only as danger, not as "dodelijk saai" (a false positive in the golden set 2026-09-06)
+  /\bdodelijk(e)?\s+(ongeluk|ongeval|gevaar|val|situatie|afloop|slachtoffer)\b/i, /\b(wachten op|is het wachten op)\b.{0,12}\bdodelijk/i,
   /\blevensgevaarlijk\b/i, /\blevensgevaar\b/i,
+  // objective danger to people (golden set 2026-09-06: a playground with needles, barbed wire, a chained fire exit)
+  /\bonveilig\b(?!.{0,20}\bvoel)/i, /\bnaalden\b/i, /\bprikkeldraad\b/i, /\b(veel |echt |levens)?te gevaarlijk\b/i,
+  /\bfire exits?\b.{0,30}\b(chained|blocked|locked|shut)\b/i, /\bchained shut\b/i, /\bunsafe\b(?!.{0,15}\bfeel)/i,
   /\bwachten op (een )?(dode|dooie|ongeluk|ramp|slachtoffer)\b/i,
   /\bvalt (er )?(straks )?.{0,25}\bnaar beneden\b/i,
   /\biemand (gaat|raakt|kan|wordt) .{0,15}\b(dood|gewond|eraan)\b/i,
