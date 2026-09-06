@@ -5,7 +5,15 @@ The order each message goes through, with **[deterministic]** floors (the guaran
 (never "OR") with the gate stated: **either** (one is enough) or **both** (both required).
 
 This is the Layer-2 / aggregate path (where the LLM label + clean live). Layer-1 (on-device,
-in-the-moment) stays deterministic-only for the instant response. Status: **implemented** in
+in-the-moment) is deterministic first; since 2026-09-06 the model's signal label ALSO runs on the
+message path (`src/layers.js` → the `label` layer) when a route is configured, so a line only a model
+can read gets its escalation offer in the moment too.
+
+**Layers are named once (`src/layers.js`) and switchable per project** (`layers.disabled` in the
+project config — e.g. `['profanity']` keeps swearing in both the deterministic sweep and the decurse
+pass; an unknown name fails validation). The walk log writes one `layer` line per layer per message
+(what it did, how long, or `skipped`), so a miss is attributable to one layer. Scored per layer by
+`scripts/feedback-eval.mjs` (`signal` · `clean` · `label`). Status: **implemented** in
 `aggregate.js` (flow) + `triage.js` (`labelMessages` crisis gate) + `pipeline.js`
 (`redactMessage` / `softenClean`). Regression test: `test/crisis-gate.test.js`.
 

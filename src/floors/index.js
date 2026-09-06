@@ -28,6 +28,7 @@ import {
   detectContactRequest, sensitivityFlags, isSensitiveDomain,
 } from '../signals.js';
 import { shield, unshield } from '../util.js';
+import { layerSwitch, traced } from '../layers.js';
 
 /**
  * Run the full deterministic floor pass on ONE raw message, client-side.
@@ -38,7 +39,7 @@ import { shield, unshield } from '../util.js';
  * goes to the LLM nuance pass; restore tokens afterwards with `unshield`.
  *
  * @param {string} text
- * @param {{ userDefault?: 'nl'|'en', fallback?: 'nl'|'en' }} [opts]
+ * @param {{ userDefault?: 'nl'|'en', fallback?: 'nl'|'en', layers?: { disabled?: string[] } }} [opts]
  * @returns {{
  *   reject: string|null,            // a rejectReason (attack) → do not process
  *   lang: 'nl'|'en',
@@ -49,17 +50,24 @@ import { shield, unshield } from '../util.js';
  *   shielded: string,               // floored text with tokens shielded, for the LLM
  *   shieldMap: object,              // restore map for unshield()
  *   hits: Array<{type:string, value:string}>,     // PII/name hits, for audit
+ *   trace: Array<{layer:string, ms:number}>,      // one line per layer (src/layers.js) — the walk log's view
  * }}
  */
 export function floorMessage(text, opts = {}) {
   const raw = String(text ?? '');
+  const on = layerSwitch(opts.layers?.disabled).on;
+  const trace = [];   // one line per layer — the walk log's per-layer view; a skipped layer is recorded as skipped
 
   // 1. attack? (prompt-injection / de-anonymisation) — reject before processing
-  const reject = rejectReason(raw) || null;
+  const reject = traced(trace, 'reject', () => on('reject')
+    ? (() => { const r = rejectReason(raw) || null; return { value: r, summary: { rejected: Boolean(r) } }; })()
+    : { value: null, summary: { skipped: true } });
 
   // 2. signal + sensitivity detection on the RAW text (cleaning can generalise
   //    away the give-away phrasing, so detect first)
-  const signal = escalationCategory(raw);          // {category, via} | null
+  const signal = traced(trace, 'signal', () => on('signal')
+    ? (() => { const sg = escalationCategory(raw); return { value: sg, summary: { signal: sg?.category ?? null, via: sg?.via ?? null } }; })()
+    : { value: null, summary: { skipped: true } });
   const sensitive = sensitiveCategory(raw) || null; // string | null
   const flags = {
     reident: detectReident(raw).isReident,
@@ -68,10 +76,16 @@ export function floorMessage(text, opts = {}) {
   };
 
   // 3. deterministic redaction: structured PII → names → profanity
-  const r1 = redact(raw);
-  const r2 = redactNames(r1.text);
-  const floored = decurseDeterministic(r2.text).text;
-  const hits = [...r1.hits, ...r2.hits];
+  const hits = [];
+  const r1 = traced(trace, 'redact', () => on('redact')
+    ? (() => { const r = redact(raw); hits.push(...r.hits); return { value: r.text, summary: { hits: r.hits.map((h) => h.type) } }; })()
+    : { value: raw, summary: { skipped: true } });
+  const r2 = traced(trace, 'names', () => on('names')
+    ? (() => { const r = redactNames(r1); hits.push(...r.hits); return { value: r.text, summary: { names: r.hits.length } }; })()
+    : { value: r1, summary: { skipped: true } });
+  const floored = traced(trace, 'profanity', () => on('profanity')
+    ? (() => { const before = r2; const t = decurseDeterministic(before).text; return { value: t, summary: { swept: t !== before } }; })()
+    : { value: r2, summary: { skipped: true } });
 
   // 4. shield tokens so the downstream LLM cannot touch or reconstruct them
   const { shielded, map } = shield(floored);
@@ -79,7 +93,7 @@ export function floorMessage(text, opts = {}) {
   // 5. language for routing to the monolingual clean prompt
   const lang = resolveLang({ text: raw, userDefault: opts.userDefault, fallback: opts.fallback }).lang;
 
-  return { reject, lang, signal, sensitive, flags, floored, shielded, shieldMap: map, hits };
+  return { reject, lang, signal, sensitive, flags, floored, shielded, shieldMap: map, hits, trace };
 }
 
 /** Restore shielded tokens after the LLM nuance pass. */

@@ -61,7 +61,7 @@ export async function runTask1(model, rawMessages, opts = {}) {
   const perMessage = [], rejected = [], signals = [];
 
   for (const raw of rawMessages) {
-    const fm = floorMessage(raw, { userDefault });
+    const fm = floorMessage(raw, { userDefault, layers: opts.layers });
     if (fm.reject) { rejected.push({ raw, reason: fm.reject }); continue; }
     const c = await cleanMessage(model, raw, { ...opts, userLang: fm.lang });
     const rec = {

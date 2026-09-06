@@ -15,6 +15,7 @@ import { profileFor, MINIMAL_CLEAN, MINIMAL_SUMMARIZE, thinkingFor } from './pro
 import { identifierPass, decursePass } from './passes.js';
 import { sample, pairsToTurns, shield, unshield } from './util.js';
 import { PREFERRED_LANGUAGE, langName } from './config.js';
+import { layerSwitch } from './layers.js';
 
 /**
  * Step 1 (structured regex) + 1b (name gazetteer) + 2 (LLM) for one message.
@@ -30,11 +31,12 @@ import { PREFERRED_LANGUAGE, langName } from './config.js';
 // Phase 0 — deterministic floors only: structured PII + name gazetteer → the "redacted"
 // text (safe to send to the LLM, wording/tone intact). No LLM call. `skipClean` = already
 // consented/cleaned upstream → pass through unchanged.
-export function redactMessage(rawText, { userLang, skipClean } = {}) {
+export function redactMessage(rawText, { userLang, skipClean, layers } = {}) {
   const { lang, source } = resolveLang({ text: rawText, userDefault: userLang });
   if (skipClean) return { raw: rawText, redacted: rawText, hits: [], lang, langSource: source };
-  const structured = redact(rawText);
-  const named = redactNames(structured.text);
+  const on = layerSwitch(layers?.disabled).on;
+  const structured = on('redact') ? redact(rawText) : { text: rawText, hits: [] };
+  const named = on('names') ? redactNames(structured.text) : { text: structured.text, hits: [] };
   return { raw: rawText, redacted: named.text, hits: [...structured.hits, ...named.hits], lang, langSource: source };
 }
 
@@ -42,7 +44,10 @@ export function redactMessage(rawText, { userLang, skipClean } = {}) {
 // pass, verbose (local) = identifier + decurse. `skipClean` = pass through (consented).
 export async function softenClean(model, redacted, lang, opts = {}) {
   if (opts.skipClean) return { cleaned: redacted, error: null, ms: 0 };
-  if (profileFor(model, opts) === 'minimal') {
+  const on = layerSwitch(opts.layers?.disabled).on;
+  // A switched-off model layer forces the separate passes (the minimal profile is ONE combined prompt).
+  const separate = !on('identifier') || !on('profanity');
+  if (!separate && profileFor(model, opts) === 'minimal') {
     const { shielded, map } = shield(redacted);
     // opts.cleanSystem lets the geo/profanity tuning harness A/B a candidate prompt
     // against the default without touching the wired path (additive, unused in prod).
@@ -50,15 +55,15 @@ export async function softenClean(model, redacted, lang, opts = {}) {
     const r = await chat(model, system, shielded, { ...opts, thinking: thinkingFor('clean', { ...opts, model }) });
     return { cleaned: r.ok ? unshield(r.text.trim(), map) : null, error: r.ok ? null : r.error, ms: r.ms };
   }
-  const id = await identifierPass(model, redacted, lang, opts);
-  const dc = await decursePass(model, id.text, lang, opts);
+  const id = on('identifier') ? await identifierPass(model, redacted, lang, opts) : { text: redacted, ms: 0, error: null };
+  const dc = on('profanity') ? await decursePass(model, id.text, lang, opts) : { text: id.text, ms: 0, error: null };
   return { cleaned: dc.text, error: id.error || dc.error || null, ms: (id.ms || 0) + (dc.ms || 0) };
 }
 
 // Phase 0 + Phase 5 together — one message, redact then soften (used by runPipeline / smokes).
 export async function cleanMessage(model, rawText, opts = {}) {
   const { userLang, ...rest } = opts;
-  const r = redactMessage(rawText, { userLang, skipClean: opts.skipClean });
+  const r = redactMessage(rawText, { userLang, skipClean: opts.skipClean, layers: opts.layers });
   const s = await softenClean(model, r.redacted, r.lang, rest);
   return { raw: r.raw, redacted: r.redacted, hits: r.hits, lang: r.lang, langSource: r.langSource, cleaned: s.cleaned, error: s.error, ms: s.ms };
 }

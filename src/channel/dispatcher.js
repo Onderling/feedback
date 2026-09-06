@@ -8,6 +8,8 @@
 // adapter's trust context.
 
 import { walkLog } from '../walk-log.js';
+import { layerSwitch } from '../layers.js';
+import { labelOne } from '../triage.js';
 import { assertAdapter } from './adapter.js';
 import { escalates, runTask1, lineFor } from '../task1.js';
 import { buildContribution } from '../pod/contribution.js';
@@ -73,8 +75,24 @@ export class ChannelDispatcher {
 
   /** An inbound message. Floors via the adapter (placement), routes, responds. */
   async handleMessage(raw, { edited = false } = {}) {
-    const fm = await this.#adapter.floor(raw, { userDefault: this.#opts.userDefault });
+    const layers = this.#opts.layers;
+    const fm = await this.#adapter.floor(raw, { userDefault: this.#opts.userDefault, layers });
+    for (const t of fm?.trace || []) walkLog({ kind: 'layer', trust: this.#adapter.floorsTrust, ...t });
     walkLog({ kind: 'floor', trust: this.#adapter.floorsTrust, hits: fm?.hits?.length ?? fm?.redactions?.length ?? null, signal: fm?.signal?.category ?? null, rejected: Boolean(fm?.reject) });
+    // The `label` layer: the model looks for a signal the lexicons cannot see. Only with a route (a model),
+    // only when the project keeps the layer on, never over a deterministic hit. Its failure is logged, not fatal.
+    if (!fm.reject && !fm.signal && this.#opts.model && layerSwitch(layers?.disabled).on('label')) {
+      const t0 = Date.now();
+      try {
+        const { signal, label } = await labelOne(this.#opts.model, fm.floored ?? fm.redacted ?? raw, raw, this.#opts);
+        if (signal) fm.signal = signal;
+        walkLog({ kind: 'layer', layer: 'label', ms: Date.now() - t0, signal: signal?.category ?? null, domain: label?.domain ?? null });
+      } catch (e) {
+        walkLog({ kind: 'layer', layer: 'label', ms: Date.now() - t0, error: String(e?.message || e) });
+      }
+    } else if (!fm.reject && !fm.signal) {
+      walkLog({ kind: 'layer', layer: 'label', ms: 0, skipped: true, why: this.#opts.model ? 'disabled' : 'no model' });
+    }
     if (fm.reject) {
       await this.#adapter.send({ type: 'rejected', reason: fm.reject });
       return { stored: false, reason: fm.reject };

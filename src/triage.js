@@ -103,6 +103,18 @@ export async function labelMessages(model, messages, opts = {}, rawMessages = nu
   });
 }
 
+/** The `label` layer for ONE message on the message path (src/layers.js): the model labels the floored
+ *  text; the deterministic floor on the raw text keeps precedence (labelMessages). Returns the escalation
+ *  signal the model saw that the lexicons did not — `{category, via:'llm', confirmed:false}` — or null.
+ *  A model-only crisis comes back as `possible-crisis` from the gate; in the moment that is offered as
+ *  crisis (an offer is opt-in; the passive resource is harmless), still marked unconfirmed. */
+export async function labelOne(model, floored, raw, opts = {}) {
+  const [l] = await labelMessages(model, [floored], opts, [raw]);
+  const cat = l.signal === 'possible-crisis' ? 'crisis' : l.signal;
+  if (!cat || cat === 'none' || !ESCALATION_CATEGORIES.includes(cat)) return { signal: null, label: l };
+  return { signal: { category: cat, via: l.confirmed ? l.via : 'llm', confirmed: Boolean(l.confirmed) }, label: l };
+}
+
 // Merge near-duplicate domain labels before the k-threshold, so it sees "safety"
 // as ONE theme rather than safety / personal-safety / transport-safety (every
 // model produced this split → empty statistical track). Conservative: only

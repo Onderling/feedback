@@ -173,9 +173,11 @@ Fields per object:
    "crisis" ONLY for self-harm / suicidal thoughts (nothing else may be "crisis");
    "medical-emergency" for acute clinical deterioration (heart attack, stroke, can't breathe);
    "abuse" for physical/psychological abuse, violence or coercion;
+   "child-safety" for a child at risk (violence against a child, neglect, a young child left alone);
    "safety" for imminent physical danger / risk of serious injury;
    "harassment" for sexual harassment or unwanted advances;
    "integrity" for fraud / corruption; "discrimination"; "retaliation"; otherwise "none".
 - "severity": "high", "medium" or "low".
+Read what is DESCRIBED, not only the words used: a signal can be implied ("I stopped eating and see no point in anything" is crisis).
 
 Output ONLY the JSON array, e.g. [{"i":1,"domain":"workload","signal":"none","severity":"low"}]. No prose, no code fences.`;

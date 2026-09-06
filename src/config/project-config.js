@@ -71,6 +71,13 @@ export const ProjectConfigSchema = z.object({
     attestation: z.object({ expectedMeasurement: z.string().optional() }).passthrough().optional(),
   }),
 
+  // The per-message layers (src/layers.js) a project switches OFF — e.g. ['profanity'] keeps swearing.
+  // Unknown names fail validation; the model layers (label · identifier · profanity's decurse pass) also
+  // need a route to run at all.
+  layers: z.object({
+    disabled: z.array(z.enum(['reject', 'signal', 'label', 'redact', 'names', 'profanity', 'identifier'])).default([]),
+  }).default({ disabled: [] }),
+
   // D3 / D4 + the two-layer signal design (§5).
   signal: z.object({
     // Layer 1 (on-device deterministic) is PROVISIONAL — off unless a project enables
@@ -191,6 +198,7 @@ export function configToRunOpts(config) {
     layer1OnDevice: c.signal.layer1OnDevice,
     escalationCategories: c.signal.escalationCategories,
     passiveSupport: c.signal.passiveSupport,
+    layers: c.layers,
     reviewMode: c.review.mode,
     // advanced LLM runtime knobs — carried so the FORM is the single source (env still
     // overrides for tests). Read by profileFor / thinkingFor / chat().

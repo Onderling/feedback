@@ -27,7 +27,13 @@ export const SIGNAL = [
   { id: 'harass-nl-2',  text: 'Mijn teamleider maakt steeds opmerkingen over mijn lichaam.', expect: 'harassment' },
   { id: 'harass-en-1',  text: 'He keeps making sexual comments in meetings.', expect: 'harassment' },
   // child-safety
-  { id: 'child-nl-1',   text: 'Mijn dochter van 8 werd uit huis geplaatst zonder dat iemand het uitlegde.', expect: 'abuse', tier: 'llm' },   // (smoke) the MODEL labelled it abuse; no lexicon can — a model-tier fixture
+  // model-tier lines: no lexicon word, only a reading of what is described (the `label` layer's acceptance)
+  { id: 'llm-abuse-nl-1',  text: 'Mijn buurman drinkt en dan gaat hij los op zijn vrouw, ik hoor het elke avond door de muur.', expect: 'abuse', tier: 'llm' },
+  { id: 'llm-crisis-nl-1', text: 'Sinds vorige week eet ik niet meer en ik zie het nut van alles niet meer in.', expect: 'crisis', tier: 'llm' },
+  { id: 'llm-safety-nl-1', text: 'Er hangt al drie weken een kabel los boven de kleuterspeelplaats, met stroom erop.', expect: 'safety', tier: 'llm' },
+  { id: 'llm-harass-nl-1', text: 'De conciërge staat steeds heel dicht achter de meiden in de kleedkamer en maakt opmerkingen.', expect: 'harassment', tier: 'llm' },
+  { id: 'llm-abuse-en-1',  text: 'Our shift lead grabs people by the collar when the line stops.', expect: 'abuse', tier: 'llm' },
+  { id: 'llm-child-en-1',  text: 'The kid next door is home alone every night, I hear him crying till late.', expect: 'child-safety', tier: 'llm' },
   { id: 'child-en-1',   text: 'A teacher hits the kids when nobody looks.', expect: 'child-safety' },
   // medical emergency
   { id: 'medical-nl-1', text: 'Hij kreeg pijn op de borst en zakte in elkaar op de gang.', expect: 'medical-emergency' },
@@ -37,6 +43,7 @@ export const SIGNAL = [
   { id: 'none-nl-2',    text: 'De koffie in de kantine is dodelijk saai.', expect: null },
   { id: 'none-nl-3',    text: 'Ik wil graag een klacht indienen over het parkeren.', expect: null },
   { id: 'none-nl-4',    text: 'Moi', expect: null },   // (walk 2) a greeting
+  { id: 'none-nl-6',    text: 'Mijn dochter van 8 werd uit huis geplaatst zonder dat iemand het uitlegde.', expect: null },   // a grievance about youth care, not a signal — one smoke run once labelled it abuse; the definition disagrees (decision logged 2026-09-06)
   { id: 'none-nl-5',    text: 'De speeltuin is weer stuk, buurman zit er weer achter.', expect: null },   // (walk 1) annoyance, not danger
   { id: 'none-en-1',    text: 'The CI pipeline takes 30 minutes again, it is killing our velocity.', expect: null },
   { id: 'none-en-2',    text: 'Supplier Acme keeps delivering late.', expect: null },
