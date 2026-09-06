@@ -27,9 +27,18 @@ const DET = [
   [/^(?:\/)?(?:verwijder|wis|delete|clear)\s+(?:alles|alle|all|everything|(?:al\s+)?(?:mijn|m'n|my)\s+(?:bijdragen|contributions))[.!?\s]*$/i, () => ({ kind: 'delete-all' })],
 ];
 
+// "Is this feedback at all?" — a greeting, thanks, an ok, a test is small talk, NOT a point (the walk-2 "Moi"
+// became a stored point). Anchored + short: a real message that merely starts with "hoi" is longer than this.
+const SMALLTALK = /^(?:(?:hoi|hallo|hallo daar|hi|hey|hé|he|moi|yo|goedemorgen|goedemiddag|goedenavond|goeiemorgen|goedendag|dag|hello|good morning|good afternoon|good evening)(?:\s+(?:allemaal|daar|there|bot|iedereen))?|(?:dank(?:je|u)?(?:\s*wel)?|bedankt|thanks|thank you|thx|merci)(?:\s+(?:bot|hoor|je wel))?|(?:ok(?:é|e|ay)?|oké|top|prima|goed|fijn|mooi|super|helder|duidelijk|snap ik|is goed|ok dan|got it|great|cool|nice|fine)|(?:test|testje|testing|ping|hallo\?|werkt dit\??|werk je\??|ben je er\??|are you there\??))[.!?\s]*$/i;
+export function isSmalltalk(text) {
+  const t = (text || '').trim();
+  return t.length > 0 && t.split(/\s+/).length <= 4 && SMALLTALK.test(t);
+}
+
 function deterministicIntent(text) {
   if (text.split(/\s+/).filter(Boolean).length > 6) return null;   // long → content; LLM/default decides
   for (const [re, make] of DET) { const m = text.match(re); if (m) return make(m); }
+  if (isSmalltalk(text)) return { kind: 'smalltalk' };
   return null;
 }
 
@@ -37,12 +46,13 @@ const SYS = [
   'You classify a participant message in a civic feedback tool. The participant either sends',
   'FEEDBACK CONTENT (an opinion/experience to collect) or gives an INSTRUCTION about the tool.',
   'Respond with ONLY a JSON object, no prose:',
-  '{"intent":"message|review|consent_all|consent_one|my_contributions|menu|cancel","index":<number optional>}',
-  '- message: the text is feedback content (DEFAULT when unsure).',
-  '- review: they want to see/check their points before sending ("I\'m done", "let me see").',
+  '{"intent":"message|smalltalk|review|consent_all|consent_one|my_contributions|menu|cancel","index":<number optional>}',
+  '- message: the text is feedback content — an opinion, complaint, experience, suggestion, question about a situation (DEFAULT when unsure).',
+  '- smalltalk: ONLY a greeting, thanks, an acknowledgement, a test ("hoi", "dankjewel", "werkt dit?") — nothing to collect. Never for text that describes anything.',
+  '- review: they want to see/check the points of THIS conversation before sending ("I\'m done", "let me see what I said so far").',
   '- consent_all: send/share all their points.',
   '- consent_one: send one specific point; include its 1-based "index" if stated.',
-  '- my_contributions: show what they already sent.',
+  '- my_contributions: show what they already SENT/submitted earlier (the word sent/opgestuurd/verstuurd/gedeeld).',
   '- menu / cancel: show options / send nothing.',
 ].join('\n');
 
@@ -54,6 +64,7 @@ function actionFor(obj, text) {
     case 'my_contributions': return { kind: 'my-contributions' };
     case 'menu': return { kind: 'menu' };
     case 'cancel': return { kind: 'cancel' };
+    case 'smalltalk': return { kind: 'smalltalk' };
     case 'message': return { kind: 'message', text };
     default: return null;
   }

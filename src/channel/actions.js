@@ -9,6 +9,7 @@
 //   { kind: 'consent', all|ids|index }   hand over points (the consent = write action)
 //   { kind: 'withdraw', arg }            withdraw a contribution by id
 //   { kind: 'my-contributions' }         list mine
+//   { kind: 'smalltalk' }                a greeting / thanks / test — answered, not stored
 //   { kind: 'menu' | 'help' | 'cancel' | 'escalate-yes' | 'escalate-no' }
 
 /** Parse the explicit control grammar (slash commands + fp: button callbacks). Returns an
@@ -88,6 +89,8 @@ export async function runAction(action, { session, say, strings: s }) {
       return void await session.dispatcher.command('delete');
     case 'delete-cancel':
       return say(s.deleteAllCancelled);
+    case 'smalltalk':
+      return say(s.smalltalkAck);
     case 'cancel':
       return say(s.cancelAck);
     case 'escalate-yes':

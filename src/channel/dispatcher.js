@@ -266,7 +266,10 @@ export class ChannelDispatcher {
         return mine;
       }
       case 'withdraw':
-        await this.#pod.withdraw(this.#participant, arg);      // delete your own (before release)
+        // delete your own (before release). A wrong or stale id is answered, never thrown — a typed
+        // /intrekken with a typo must not take the bot down.
+        try { await this.#pod.withdraw(this.#participant, arg); }
+        catch (e) { await this.#adapter.send({ type: 'withdraw-failed', id: arg, reason: e?.message }); return false; }
         await this.#adapter.send({ type: 'withdrawn', id: arg });
         return true;
       case 'download': {                                       // export your own data (own-pod op)

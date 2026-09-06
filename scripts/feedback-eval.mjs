@@ -4,7 +4,11 @@
  *
  * Golden sets per layer, scored, exit 1 when a layer misses its bar:
  *   signal — the deterministic escalation floor (no model; also runs in the suite: test/signal-golden.test.js)
- *   clean  — the identifier + decurse passes on the configured route (FP_LLM_ROUTE / FP_LLM_MODEL, like the bot)
+ *   clean  — the clean pass(es) exactly as the bot composes them for the model, on the configured route
+ *   intent — the natural-language classifier (both channels): deterministic-tier lines without a model (also
+ *            in the suite), the rest on the configured route
+ *   journey — a scripted Dutch conversation through the bot's own message handler (fake bridge, real route):
+ *            every step asserted, the transcript printed
  *   label  — the model-side signal label (the `label` layer) on the configured route: the model-tier signal lines
  *            must escalate, the plain lines must not
  *
@@ -16,10 +20,14 @@
 import { parseArgs } from 'node:util';
 import { readFileSync } from 'node:fs';
 import { floorMessage } from '../src/floors/index.js';
-import { identifierPass, decursePass } from '../src/passes.js';
+import { softenClean } from '../src/pipeline.js';
 import { applyLlmRoute } from '../src/ollama.js';
 import { labelOne } from '../src/triage.js';
-import { SIGNAL, CLEAN } from './feedback-eval.fixtures.mjs';
+import { classifyIntent } from '../src/channel/intent.js';
+import { InMemoryCentralPod } from '../src/pod/central-pod.js';
+import { validateProjectConfig } from '../src/config/project-config.js';
+import { TelegramFeedbackBot } from '../src/channel/telegram-bot.js';
+import { SIGNAL, CLEAN, INTENT, JOURNEY } from './feedback-eval.fixtures.mjs';
 
 const { values } = parseArgs({ options: {
   layer: { type: 'string', default: 'all' }, only: { type: 'string' }, 'from-log': { type: 'string' },
@@ -59,11 +67,13 @@ if (values.layer === 'all' || values.layer === 'clean') {
   for (const f of pick(CLEAN)) {
     const t0 = Date.now();
     const floored = floorMessage(f.text, { userDefault: f.lang }).floored;
-    const a = await identifierPass(model, floored, f.lang, { thinking: process.env.FP_LLM_THINKING || 'off' });
-    const b = await decursePass(model, a.text, f.lang, { thinking: process.env.FP_LLM_THINKING || 'off' });
-    const out = b.text;
+    // the SAME composition as the bot: softenClean picks the profile for the model (minimal = one pass on
+    // Kimi/gpt-oss, verbose = identifier + decurse on the local models) — the harness must not measure a
+    // path the bot does not walk
+    const c = await softenClean(model, floored, f.lang, { thinking: process.env.FP_LLM_THINKING || 'off' });
+    const out = c.cleaned ?? '';
     const problems = checkProps(out, f.props);
-    const err = a.error || b.error;
+    const err = c.error;
     const pass = problems.length === 0 && !err;
     if (pass) ok += 1;
     console.log(`${pass ? '✓' : '✗'} ${f.id.padEnd(20)} ${String(Date.now() - t0).padStart(5)}ms ${out.slice(0, 90)}${pass ? '' : `  ← ${err ? `route: ${err}` : problems.join('; ')}`}`);
@@ -89,6 +99,65 @@ if (values.layer === 'all' || values.layer === 'label') {
   }
   console.log(`label: ${ok}/${set.length} · ${fn} false negative(s) · ${fp} other\n`);
   if (fn > 0) failed = true;
+}
+if (values.layer === 'all' || values.layer === 'intent') {
+  console.log('── L3 intent (deterministic tier, no model) ──');
+  let ok = 0; const det = pick(INTENT).filter((x) => x.tier === 'det');
+  for (const f of det) {
+    const got = (await classifyIntent(f.text)).kind;
+    const pass = got === f.expect; if (pass) ok += 1;
+    console.log(`${pass ? '✓' : '✗'} ${f.id.padEnd(10)} ${f.text.slice(0, 60).padEnd(60)} → ${got}${pass ? '' : `  (wanted ${f.expect})`}`);
+  }
+  console.log(`intent (deterministic): ${ok}/${det.length}\n`);
+  if (ok < det.length) failed = true;   // the deterministic tier has no excuse
+
+  const rest = pick(INTENT).filter((x) => x.tier !== 'det');
+  if (values.layer === 'intent' || values.layer === 'all') {
+    console.log('── L3 intent (model tier, the configured route) ──');
+    const { model } = routeUp();
+    let ok2 = 0; let lost = 0;
+    for (const f of rest) {
+      const t0 = Date.now();
+      const got = (await classifyIntent(f.text, { model })).kind;
+      const pass = got === f.expect; if (pass) ok2 += 1; else if (f.expect === 'message') lost += 1;
+      console.log(`${pass ? '✓' : (f.expect === 'message' ? '✗ LOST' : '✗')} ${f.id.padEnd(10)} ${String(Date.now() - t0).padStart(5)}ms ${f.text.slice(0, 56).padEnd(56)} → ${got}${pass ? '' : `  (wanted ${f.expect})`}`);
+    }
+    console.log(`intent (model): ${ok2}/${rest.length} (${Math.round((ok2 / (rest.length || 1)) * 100)}%) · ${lost} feedback line(s) mistaken for a command\n`);
+    if (rest.length && ok2 / rest.length < 0.9) failed = true;
+    if (lost > 0) failed = true;   // a feedback line read as a command is a lost point
+  }
+}
+
+if (values.layer === 'all' || values.layer === 'journey') {
+  console.log('── L4 journey (the bot\'s own message handler, fake bridge, the configured route) ──');
+  const { model } = routeUp();
+  const config = validateProjectConfig({
+    projectId: 'eval-journey', llm: { route: process.env.FP_LLM_ROUTE || 'local', model }, aggregation: { k: 1 },
+    signal: { layer1OnDevice: true },
+  });
+  for (const j of pick(JOURNEY)) {
+    const bridge = { sent: [], onMessage(h) { this.h = h; }, async sendReply(a) { this.sent.push(a); }, async start() {}, async stop() {} };
+    const pod = new InMemoryCentralPod();
+    const bot = new TelegramFeedbackBot({ bridge, pod, config, participantFor: () => 'eval' });
+    await bot.start();
+    console.log(`\n${j.id} — ${j.title}`);
+    let steps = 0; let bad = 0;
+    for (const [text, check] of j.steps) {
+      bridge.sent = [];
+      const t0 = Date.now();
+      const typed = text.endsWith('__first__') ? text.replace('__first__', pod.list()[0]?.contribution?.id ?? '?') : text;
+      await bridge.h({ chatId: '1', messageId: String(++steps), text: typed });
+      const replies = bridge.sent;
+      const problem = check({ replies, pod, text: replies.map((r) => r.text || '').join('\n'), buttons: replies.flatMap((r) => (r.buttons || []).map((b) => b.id)) });
+      if (problem) bad += 1;
+      console.log(`  ${problem ? '✗' : '✓'} ${String(Date.now() - t0).padStart(5)}ms  you: ${text}`);
+      for (const r of replies) console.log(`             bot: ${String(r.text || '').replace(/\n/g, ' ').slice(0, 140)}${r.buttons?.length ? `  [${r.buttons.map((b) => b.label).join(' · ')}]` : ''}`);
+      if (problem) console.log(`             ← ${problem}`);
+    }
+    console.log(`journey ${j.id}: ${steps - bad}/${steps} steps`);
+    if (bad) failed = true;
+  }
+  console.log('');
 }
 process.exit(failed ? 1 : 0);
 

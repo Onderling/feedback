@@ -2,6 +2,7 @@
 // language, all callers reference keys). Selected when a project's language.preferred is 'en'.
 
 export default {
+  smalltalkAck: 'Hi! Tell me whatever you want to share. I collect your points and show them to you first, before anything is shared. Type /menu for the options.',
   received: 'Received ✓. Send more whenever you like, or type /review to check your points so far (you can carry on after).',
   rejected: (reason) => `This message was not stored (${reason}). Feel free to adjust it and send again.`,
 
@@ -39,6 +40,7 @@ export default {
   verificationRequired: 'This project only accepts contributions from a verified identity. Please take part through the Basis app, which signs your contribution on your own device.',
   consentFailed: (n) => `${n} contribution(s) could not be stored and were not sent. Nothing was kept.`,
 
+  withdrawFailed: (id) => `I could not withdraw ${id} — that contribution does not exist (any more) or is already included. Type /withdraw to see what you can withdraw.`,
   withdrawButton: '↩ Withdraw',
   contributionsHeader: 'Your contributions:',
   contributionLine: (n, text, id) => `${n}. ${text}  —  /withdraw ${id}`,
