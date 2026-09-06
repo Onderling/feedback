@@ -39,7 +39,8 @@ function respond(messages) {
   if (/classify a participant message|"intent"/i.test(sys)) return JSON.stringify(intentFor(user));
   if (/JSON array|"domain"|triage/i.test(sys)) {
     const lines = user.split('\n').filter((l) => /^\s*\d+\./.test(l));
-    const arr = (lines.length ? lines : [user]).map((l, i) => ({ i: i + 1, domain: domainFor(l), signal: 'none', severity: 'low' }));
+    // 'uit huis geplaatst' is the one line only a model can label (child-safety) — for the label-layer tests.
+    const arr = (lines.length ? lines : [user]).map((l, i) => ({ i: i + 1, domain: domainFor(l), signal: /uit huis geplaatst|out of home/i.test(l) ? 'child-safety' : 'none', severity: 'low' }));
     return JSON.stringify(arr);
   }
   if (/summari[sz]e|one bullet|bullet/i.test(sys)) {

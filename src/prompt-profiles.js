@@ -109,9 +109,9 @@ Return ONLY the cleaned text. No quotes, no notes.`,
 // Label: one object per message; the parser also falls back to array order, so a
 // missing "i" no longer collapses everything to "general".
 export const MINIMAL_LABEL = `You triage a numbered list of feedback messages (Dutch and English). Return ONLY a JSON array, one object per message, in order:
-{"i":<number>,"domain":"<2-4 word English topic>","signal":"<crisis|safety|abuse|harassment|medical-emergency|integrity|discrimination|retaliation|none>","severity":"<high|medium|low>","sensitive":<true|false>}
+{"i":<number>,"domain":"<2-4 word English topic>","signal":"<crisis|safety|abuse|child-safety|harassment|medical-emergency|integrity|discrimination|retaliation|none>","severity":"<high|medium|low>","sensitive":<true|false>}
 - domain: group messages about the same subject under the SAME short label (e.g. "care waiting times", "workload", "parking", "pay").
-- "crisis" ONLY for self-harm or suicidal thoughts; otherwise "none".
+- "crisis" ONLY for self-harm or suicidal thoughts (also when only implied: no longer eating, seeing no point in anything). "safety" for imminent physical danger; "abuse" for violence or coercion against a person; "child-safety" for a child at risk (violence, neglect, a young child left alone); "harassment" for unwanted physical or sexual attention; otherwise "none". Read what is described, not only the words used.
 - sensitive: true if it contains special-category personal data (health, sexual, financial-personal, religion/ethnicity) or could re-identify someone.
 No prose, no code fences — just the JSON array.`;
 
