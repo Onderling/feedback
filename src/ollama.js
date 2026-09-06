@@ -17,6 +17,15 @@
 // A host without env (the browser / basis) injects the route here. Set from the
 // project config's llm block at startup; takes precedence over env when present.
 import { walkLog } from './walk-log.js';
+// A failing route is said ONCE on stderr — the bot degrades to its deterministic floors, and an operator
+// must be able to see that from the console, not only from a missing model line in a walk log.
+const _warned = new Set();
+function warnRouteOnce(base, error) {
+  const key = String(base);
+  if (_warned.has(key)) return;
+  _warned.add(key);
+  console.warn(`[feedback] LLM route ${key} is failing (${String(error).slice(0, 120)}) — running the deterministic floors only until it answers`);
+}
 let routeOverride = null;
 export function setLlmRoute(route) {
   routeOverride = route?.baseURL ? { base: route.baseURL.replace(/\/+$/, ''), apiKey: route.apiKey || '' } : null;
@@ -230,7 +239,10 @@ export async function chat(model, system, user, opts = {}) {
       const ms = Date.now() - t0;
       if (!res.ok) {
         const body = await res.text();
-        return { ok: false, ms, error: `HTTP ${res.status}: ${body.slice(0, 200)}` };
+        const error = `HTTP ${res.status}: ${body.slice(0, 200)}`;
+        walkLog({ kind: 'llm', model, route: routeOverride?.fetch ? 'privatemode-sdk' : base, task: String(system).slice(0, 60), ms, ok: false, error });
+        warnRouteOnce(base, error);
+        return { ok: false, ms, error };
       }
       const json = await res.json();
       recordUsage(json.usage);
@@ -239,6 +251,8 @@ export async function chat(model, system, user, opts = {}) {
     } catch (e) {
       const ms = Date.now() - t0;
       const error = e.name === 'AbortError' ? `timeout after ${timeoutMs}ms` : String(e.message || e);
+      walkLog({ kind: 'llm', model, route: routeOverride?.fetch ? 'privatemode-sdk' : base, task: String(system).slice(0, 60), ms, ok: false, error });
+      warnRouteOnce(base, error);
       return { ok: false, ms, error };
     }
   }

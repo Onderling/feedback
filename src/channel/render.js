@@ -59,7 +59,11 @@ export function renderMessage(msg, s = getStrings()) {
       return { text: s.consentFailed(msg.count ?? 0) };
     case 'contributions':
       return msg.items?.length
-        ? { text: [s.contributionsHeader, ...msg.items.map((c, i) => s.contributionLine(i + 1, c.text, c.id))].join('\n') }
+        ? {
+          text: [s.contributionsHeader, ...msg.items.map((c, i) => s.contributionLine(i + 1, c.text, c.id))].join('\n'),
+          // a bare /intrekken: one button per contribution, so nobody has to type an id
+          ...(msg.withdrawButtons ? { buttons: msg.items.map((c, i) => ({ id: `fp:withdraw:${c.id}`, label: `${s.withdrawButton ?? '↩'} ${i + 1}` })) } : {}),
+        }
         : { text: s.contributionsEmpty };
     case 'withdrawn':
       return { text: s.withdrawn(msg.id) };

@@ -43,6 +43,8 @@ export function parseControl(text) {
   if (pe) return { kind: 'edit-point', id: pe[1], text: pe[2]?.trim() };
   const wd = t.match(/^(?:\/intrekken|\/withdraw|fp:withdraw:)\s*(.+)$/);
   if (wd) return { kind: 'withdraw', arg: wd[1].trim() };
+  // a bare /intrekken names nothing → show what can be withdrawn, with a button per contribution
+  if (t === '/intrekken' || t === '/withdraw') return { kind: 'my-contributions', withdrawButtons: true };
   return null;
 }
 
@@ -61,7 +63,7 @@ function consentIds(action, points) {
  * @param {{ session:{dispatcher, points:Array, adapter}, say:(text:string,buttons?:Array)=>Promise<void>, strings:object }} ctx
  */
 export async function runAction(action, { session, say, strings: s }) {
-  walkLog({ kind: 'turn', chat: shortChat(session?.chatId), action: action?.kind, ...(action?.kind === 'message' ? { chars: String(action.text ?? '').length } : {}) });
+  walkLog({ kind: 'turn', chat: shortChat(session?.chatId ?? session?.participant ?? session?.id), action: action?.kind, ...(action?.kind === 'message' ? { chars: String(action.text ?? '').length } : {}) });
   switch (action.kind) {
     case 'menu':
       return say(s.menuWelcome, [{ id: 'fp:review', label: s.menuReview }, { id: 'fp:mine', label: s.menuMine }]);
@@ -79,7 +81,7 @@ export async function runAction(action, { session, say, strings: s }) {
     case 'withdraw':
       return void await session.dispatcher.command('withdraw', action.arg);
     case 'my-contributions':
-      return void await session.dispatcher.command('my-contributions');
+      return void await session.dispatcher.command('my-contributions', action.withdrawButtons ? { withdrawButtons: true } : undefined);
     case 'delete-all':                                           // ASK ONLY — needs an explicit confirm tap
       return say(s.deleteAllConfirm, [{ id: 'fp:delete-confirm', label: s.deleteAllYes }, { id: 'fp:delete-cancel', label: s.deleteAllNo }]);
     case 'delete-confirm':                                       // confirmed → erase all (emits the count)

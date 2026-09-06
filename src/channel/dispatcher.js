@@ -244,7 +244,7 @@ export class ChannelDispatcher {
     switch (action) {
       case 'my-contributions': {
         const mine = (await this.#pod.list()).filter((x) => x.participant === this.#participant).map((x) => x.contribution);
-        await this.#adapter.send({ type: 'contributions', items: mine });
+        await this.#adapter.send({ type: 'contributions', items: mine, ...(arg?.withdrawButtons ? { withdrawButtons: true } : {}) });
         return mine;
       }
       case 'withdraw':

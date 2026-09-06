@@ -16,10 +16,11 @@ import { InMemoryCentralPod } from '../src/pod/central-pod.js';
 import { validateProjectConfig } from '../src/config/project-config.js';
 import { walkLog, walkLogOn, walkLogFile } from '../src/walk-log.js';
 import { cryptoForProject } from '../src/pod/crypto-config.js';
+import { applyLlmRoute, assertCleanRouteSafe } from '../src/ollama.js';
 
 const token = process.env.FP_TG_BOT_TOKEN || process.env.HOUSEHOLD_TG_BOT_TOKEN;
 if (!token) { console.log('SKIP: set FP_TG_BOT_TOKEN (a Telegram bot token)'); process.exit(0); }
-if (!process.env.FP_LLM_BASEURL) console.log('NOTE: FP_LLM_BASEURL not set — review/clean will hit the default local route.');
+if ((process.env.FP_LLM_ROUTE || 'local') === 'local' && !process.env.FP_LLM_BASEURL) console.log('NOTE: local route without FP_LLM_BASEURL — review/clean will hit the default Ollama; set FP_LLM_ROUTE=privatemode for the enclave.');
 
 let TelegramBridge;
 try { ({ TelegramBridge } = await import('@onderling/chat-agent/bridges/telegram')); }
@@ -34,6 +35,12 @@ const config = validateProjectConfig({
   signal: { layer1OnDevice: true, escalationCategories: ['crisis'] },
   ...(process.env.FP_PROJECT_PUBKEY ? { privacy: { seal: true, projectPublicKey: process.env.FP_PROJECT_PUBKEY } } : {}),
 });
+// The bot OWNS its LLM route (like basis-bot.js): apply the configured route and refuse an unsafe clean route
+// up front. Without this the process fell back to the local default, the model was not there, every clean call
+// failed silently and a walk ran on the deterministic floors alone (2026-09-06).
+const applied = applyLlmRoute(config.llm);
+assertCleanRouteSafe(config.llm);
+console.log(`LLM route: ${applied.route} (${applied.baseURL}) model ${config.llm.model}`);
 if (config.privacy.seal) console.log('sealing contributions to the project key (host-blind writer).');
 walkLog({ kind: 'run', bot: 'telegram', project: config.projectId, llm: { route: config.llm.route, model: config.llm.model } });
 if (walkLogOn()) console.log(`walk log → ${walkLogFile()}`);

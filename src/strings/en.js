@@ -39,6 +39,7 @@ export default {
   verificationRequired: 'This project only accepts contributions from a verified identity. Please take part through the Basis app, which signs your contribution on your own device.',
   consentFailed: (n) => `${n} contribution(s) could not be stored and were not sent. Nothing was kept.`,
 
+  withdrawButton: '↩ Withdraw',
   contributionsHeader: 'Your contributions:',
   contributionLine: (n, text, id) => `${n}. ${text}  —  /withdraw ${id}`,
   contributionsEmpty: 'You have not sent any contributions yet.',

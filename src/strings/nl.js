@@ -43,6 +43,7 @@ export default {
   verificationRequired: 'Dit project accepteert alleen bijdragen van een geverifieerde identiteit. Doe mee via de Basis-app, die je bijdrage op je eigen apparaat ondertekent.',
   consentFailed: (n) => `${n} bijdrage(n) konden niet worden opgeslagen en zijn niet verstuurd. Er is niets bewaard.`,
 
+  withdrawButton: '↩ Intrekken',
   contributionsHeader: 'Je bijdragen:',
   contributionLine: (n, text, id) => `${n}. ${text}  —  /intrekken ${id}`,
   contributionsEmpty: 'Je hebt nog geen bijdragen verstuurd.',

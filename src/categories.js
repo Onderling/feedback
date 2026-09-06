@@ -25,9 +25,11 @@ const MEDICAL_EMERGENCY = [
 
 const ABUSE = [
   /\bmishandel/i, /\bgeslagen\b/i, /\bgeweld\b/i, /\bgedwongen\b/i, /\bonder dwang\b/i,
-  /\bbedreigd\b/i, /\baanrand/i, /\bmisbruik/i, /\b(vastgebonden|gefixeerd)\b/i,
+  /\bbedreig/i, /\baanrand/i, /\bmisbruik/i, /\b(vastgebonden|gefixeerd)\b/i,
+  // a weapon named in a threat — "bedreigde mij met een mes" got NO signal on 2026-09-06 (the old rule wanted the participle)
+  /\b(met een|with a|met het|with the) (mes|wapen|pistool|knife|gun|weapon)\b/i, /\bdreig(t|de|en)?\b/i,
   /\babuse(d)?\b/i, /\bassault(ed)?\b/i, /\bhit me\b/i, /\bbeaten\b/i,
-  /\bforced (me )?to\b/i, /\bthreatened (me|to)\b/i, /\bcoerc/i,
+  /\bforced (me )?to\b/i, /\bthreaten(ed|s|ing)?\b/i, /\bcoerc/i,
 ];
 
 const HARASSMENT = [

@@ -82,3 +82,10 @@ test('subtle discrimination (no explicit word) is caught for quarantine', () => 
   assert.equal(detectDiscrimination('the forms are Dutch-only so internationals are systematically left out').hit, true);
   assert.equal(detectDiscrimination('de container staat verkeerd geparkeerd').hit, false);
 });
+
+test('abuse lexicon catches a past-tense threat and a weapon (walk 2026-09-06: "bedreigde mij thuis met een mes" got no signal)', () => {
+  assert.equal(detectAbuse('Mijn man bedreigde mij thuis met een mes, ik durf niet meer naar huis.').hit, true);
+  assert.equal(detectAbuse('He threatened me with a knife last night').hit, true);
+  assert.equal(detectAbuse('ze dreigt met een wapen als ik niet betaal').hit, true);
+  assert.equal(detectAbuse('de wachtlijst is te lang').hit, false);
+});

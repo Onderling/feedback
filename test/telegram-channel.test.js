@@ -205,3 +205,44 @@ test('/bekijk after an edit preserves the edit (re-review no longer re-curates f
   assert.equal(c.contribution.edited, true, 'edited flag set');
   await mock.close();
 });
+
+// ── from Frits' Telegram walk, 2026-09-06 ──────────────────────────────────────────────────
+test('two consent rounds: /mijn lists every stored contribution, not only the first round', async (t) => {
+  const mock = await startMockLlm(); t.after(() => mock.close());
+  const pod = new InMemoryCentralPod();
+  const bridge = new FakeBridge();
+  const bot = new TelegramFeedbackBot({ bridge, pod, config: config() });
+  await bot.start();
+  const say = async (text, id) => { bridge.clear(); await bridge.emit({ chatId: '42', messageId: id, text }); return bridge.last(); };
+  await say('De speeltuin is weer stuk.', '1');
+  await say('/bekijk', '2');
+  await say('fp:consent:all', '3');
+  await say('De wachtlijst is te lang.', '4');
+  await say('En de balie is onbereikbaar.', '5');
+  await say('/bekijk', '6');
+  const submitted = await say('fp:consent:all', '7');
+  assert.match(submitted.text, /2 bijdrage/);
+  const mine = await say('/mijn', '8');
+  assert.match(mine.text, /speeltuin/);
+  assert.match(mine.text, /wachtlijst/);
+  assert.match(mine.text, /balie/);
+});
+
+test('a bare /intrekken is a withdraw ask with buttons, never stored as a point', async (t) => {
+  const mock = await startMockLlm(); t.after(() => mock.close());
+  const pod = new InMemoryCentralPod();
+  const bridge = new FakeBridge();
+  const bot = new TelegramFeedbackBot({ bridge, pod, config: config() });
+  await bot.start();
+  const say = async (text, id) => { bridge.clear(); await bridge.emit({ chatId: '42', messageId: id, text }); return bridge.last(); };
+  await say('De speeltuin is weer stuk.', '1');
+  await say('/bekijk', '2');
+  await say('fp:consent:all', '3');
+  const ask = await say('/intrekken', '4');
+  assert.ok(ask.buttons?.some((b) => /^fp:withdraw:/.test(b.id)), 'offers the stored contributions as withdraw buttons');
+  const review = await say('/bekijk', '5');
+  assert.doesNotMatch(review.text, /intrekken/);
+  await say(ask.buttons.find((b) => /^fp:withdraw:/.test(b.id)).id, '6');
+  const mine = await say('/mijn', '7');
+  assert.match(mine.text, /nog geen bijdragen/);
+});
